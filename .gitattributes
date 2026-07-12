@@ -1,0 +1,42 @@
+* text=auto
+* text eol=lf
+
+### front end ###
+*.vue  text eol=lf
+*.js   text eol=lf
+*.ts   text eol=lf
+*.json text eol=lf
+*.css  text eol=lf
+*.scss text eol=lf
+*.less text eol=lf
+*.html text eol=lf
+*.htm  text eol=lf
+
+### back end ###
+*.java     text eol=lf
+*.xml      text eol=lf
+*.yml      text eol=lf
+*.yaml     text eol=lf
+*.properties text eol=lf
+*.sql      text eol=lf
+*.gradle   text eol=lf
+*.md       text eol=lf
+
+### script ###
+*.sh text eol=lf
+*.bat text eol=crlf
+/mvnw text eol=lf
+*.cmd text eol=crlf
+
+### binary ###
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.jar binary
+*.war binary
+*.class binary
+*.zip binary
+*.tar.gz binary

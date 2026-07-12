@@ -1,0 +1,4 @@
+spring:
+  datasource:
+    username:       # your own MySQL username
+    password:       # your own MySQL password
