@@ -24,20 +24,24 @@ public class CommonResult<T> implements Serializable {
      * @see ErrorCode#getCode()
      */
     private Integer code;
-    /**
-     * 返回数据
-     */
-    private T data;
-    /**
-     * 返回总数
-     */
-    private Long total;
+
     /**
      * 错误提示，用户可阅读
      *
      * @see ErrorCode#getMsg() ()
      */
     private String msg;
+
+
+    /**
+     * 数据
+     */
+    private T data;
+
+    /**
+     * 分页时的总记录数
+     */
+    private Long total;
 
     /**
      * 将传入的 result 对象，转换成另外一个泛型结果的对象
