@@ -1,20 +1,14 @@
 package com.uestc.group14.backend.dto;
 
-import com.uestc.group14.backend.Entity.UserEntity;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.ToString;
 
 @Data
-@Getter
-@ToString(callSuper = true)
-@EqualsAndHashCode(callSuper = true)
-public class LoginRequest extends UserEntity {
+public class LoginRequest {
 
-    /** 页码（查询用，登录时不需要） */
-    private Integer pageNo;
+    @NotBlank(message = "用户名不能为空")
+    private String username;
 
-    /** 页大小（查询用，登录时不需要） */
-    private Integer pageSize;
+    @NotBlank(message = "密码不能为空")
+    private String password;
 }

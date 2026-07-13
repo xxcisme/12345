@@ -39,7 +39,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public LoginResponse login(LoginRequest loginRequest, HttpServletRequest request) {
         String username = loginRequest.getUsername();
-        String password = loginRequest.getPasswordHash();
+        String password = loginRequest.getPassword();
 
         if (!StringUtils.hasText(username) || !StringUtils.hasText(password)) {
             log.warn("登录失败 - 用户名或密码为空");
@@ -71,13 +71,30 @@ public class AuthServiceImpl implements AuthService {
 
         String token = jwtUtil.generateToken(user.getId(), user.getUsername(), user.getRole());
 
+        // 查询用户详细信息获取真实姓名
+        String realName = null;
+        LambdaQueryWrapper<UserProfile> profileWrapper = new LambdaQueryWrapper<>();
+        profileWrapper.eq(UserProfile::getUserId, user.getId());
+        UserProfile profile = userProfileMapper.selectOne(profileWrapper);
+        if (profile != null) {
+            realName = profile.getRealName();
+        }
+
+        LoginResponse.UserInfo userInfo = LoginResponse.UserInfo.builder()
+                .id(user.getId())
+                .username(user.getUsername())
+                .role(user.getRole())
+                .phone(user.getPhone())
+                .email(user.getEmail())
+                .realName(realName)
+                .status(user.getStatus())
+                .build();
+
         log.info("用户登录成功 - username: {}, userId: {}", username, user.getId());
 
         return LoginResponse.builder()
                 .token(token)
-                .userId(user.getId())
-                .username(user.getUsername())
-                .role(user.getRole())
+                .user(userInfo)
                 .build();
     }
 
@@ -85,7 +102,7 @@ public class AuthServiceImpl implements AuthService {
     @Transactional(rollbackFor = Exception.class)
     public void register(RegisterRequest registerRequest) {
         String username = registerRequest.getUsername();
-        String password = registerRequest.getPasswordHash();
+        String password = registerRequest.getPassword();
         String confirmPassword = registerRequest.getConfirmPassword();
         String realName = registerRequest.getRealName();
 
@@ -113,25 +130,21 @@ public class AuthServiceImpl implements AuthService {
         UserEntity user = new UserEntity();
         user.setUsername(username);
         user.setPasswordHash(Sha256Util.encrypt(password));
-        user.setRole(3);
+        user.setRole(3); // 社会人士
         user.setPhone(registerRequest.getPhone());
         user.setEmail(registerRequest.getEmail());
         user.setStatus(1);
         user.setDelFlag(0);
-        user.setCreateTime(LocalDateTime.now());
-        user.setUpdateTime(LocalDateTime.now());
 
         userMapper.insert(user);
 
-        if (StringUtils.hasText(realName)) {
+        if (StringUtils.hasText(realName) || StringUtils.hasText(registerRequest.getSchoolCode()) ||
+                StringUtils.hasText(registerRequest.getOccupationType())) {
             UserProfile userProfile = new UserProfile();
             userProfile.setUserId(user.getId());
             userProfile.setRealName(realName);
             userProfile.setSchoolCode(registerRequest.getSchoolCode());
-            userProfile.setClassName(registerRequest.getClassName());
-            userProfile.setOccupationType("社会人士");
-            userProfile.setCreateTime(LocalDateTime.now());
-            userProfile.setUpdateTime(LocalDateTime.now());
+            userProfile.setOccupationType(registerRequest.getOccupationType());
             userProfileMapper.insert(userProfile);
         }
 

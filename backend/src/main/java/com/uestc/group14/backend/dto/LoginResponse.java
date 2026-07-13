@@ -1,15 +1,14 @@
 package com.uestc.group14.backend.dto;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-/**
- * 登录响应DTO
- */
 @Data
-@Getter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class LoginResponse {
 
     /**
@@ -18,17 +17,21 @@ public class LoginResponse {
     private String token;
 
     /**
-     * 用户ID
+     * 用户信息对象
      */
-    private Long userId;
+    private UserInfo user;
 
-    /**
-     * 用户名
-     */
-    private String username;
-
-    /**
-     * 用户角色：1-学生，2-老师，3-社会人士，4-管理员
-     */
-    private Integer role;
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class UserInfo {
+        private Long id;
+        private String username;
+        private Integer role;
+        private String phone;
+        private String email;
+        private String realName;
+        private Integer status;
+    }
 }

@@ -9,6 +9,7 @@ public class FavoriteVO {
     private Long resourceId;
     private String resourceName;
     private Integer resourceType;
+    private String resourceTypeName;
     private String thumbnail;
     private LocalDateTime createTime;
 }

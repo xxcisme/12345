@@ -5,13 +5,14 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.uestc.group14.backend.Entity.*;
 import com.uestc.group14.backend.common.enums.GlobalErrorCodeConstants;
-// 移除 Md5Util 导入，改用 Sha256Util
+import com.uestc.group14.backend.common.exception.BusinessException;
 import com.uestc.group14.backend.common.utils.Sha256Util;
 import com.uestc.group14.backend.dao.*;
 import com.uestc.group14.backend.dto.*;
 import com.uestc.group14.backend.service.UserCenterService;
 import com.uestc.group14.backend.vo.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -35,12 +36,14 @@ public class UserCenterServiceImpl implements UserCenterService {
     private final GradeMapper gradeMapper;
     private final LabReportMapper labReportMapper;
     private final UserMessageMapper userMessageMapper;
+    private final TeacherMapper teacherMapper;
+    private final ClassMapper classMapper;  // 新增注入
 
     @Override
     public UserInfoVO getProfile(Long userId) {
         UserEntity user = userMapper.selectById(userId);
         if (user == null) {
-            throw new RuntimeException(GlobalErrorCodeConstants.NOT_FOUND.getMsg());
+            throw new BusinessException(GlobalErrorCodeConstants.NOT_FOUND);
         }
         UserProfile profile = userProfileMapper.selectOne(
                 new LambdaQueryWrapper<UserProfile>().eq(UserProfile::getUserId, userId)
@@ -52,21 +55,31 @@ public class UserCenterServiceImpl implements UserCenterService {
         vo.setPhone(user.getPhone());
         vo.setEmail(user.getEmail());
         vo.setStatus(user.getStatus());
+        vo.setLastLoginTime(user.getLastLoginTime());
+        vo.setLastLoginIp(user.getLastLoginIp());
         if (profile != null) {
             vo.setRealName(profile.getRealName());
             vo.setSchoolCode(profile.getSchoolCode());
-            vo.setClassName(profile.getClassName());
+            vo.setClassName(profile.getClassName());      // 直接取 profile 中的 className（若有）
             vo.setOccupationType(profile.getOccupationType());
+            vo.setClassId(profile.getClassId());
+            // 如果 profile 中 className 为空但 classId 有值，则从班级表查询
+            if (!StringUtils.hasText(vo.getClassName()) && profile.getClassId() != null) {
+                ClassEntity clazz = classMapper.selectById(profile.getClassId());
+                if (clazz != null) {
+                    vo.setClassName(clazz.getClassName());
+                }
+            }
         }
         return vo;
     }
 
     @Override
     @Transactional
-    public void updateProfile(Long userId, UpdateProfileDTO dto) {
+    public UserInfoVO updateProfile(Long userId, UpdateProfileDTO dto) {
         UserEntity user = userMapper.selectById(userId);
         if (user == null) {
-            throw new RuntimeException(GlobalErrorCodeConstants.NOT_FOUND.getMsg());
+            throw new BusinessException(GlobalErrorCodeConstants.NOT_FOUND);
         }
         if (StringUtils.hasText(dto.getPhone())) {
             user.setPhone(dto.getPhone());
@@ -86,33 +99,36 @@ public class UserCenterServiceImpl implements UserCenterService {
         if (StringUtils.hasText(dto.getRealName())) {
             profile.setRealName(dto.getRealName());
         }
-        userProfileMapper.insertOrUpdate(profile);
+        if (profile.getId() == null) {
+            userProfileMapper.insert(profile);
+        } else {
+            userProfileMapper.updateById(profile);
+        }
+
+        // 返回更新后的个人信息
+        return getProfile(userId);
     }
 
-    // ==================== ★ 修改点：changePassword 方法 ====================
     @Override
     @Transactional
     public void changePassword(Long userId, ChangePasswordDTO dto) {
         if (!Objects.equals(dto.getNewPassword(), dto.getConfirmPassword())) {
-            throw new RuntimeException("两次输入密码不一致");
+            throw new BusinessException(400, "两次输入密码不一致");
         }
         UserEntity user = userMapper.selectById(userId);
         if (user == null) {
-            throw new RuntimeException(GlobalErrorCodeConstants.NOT_FOUND.getMsg());
+            throw new BusinessException(GlobalErrorCodeConstants.NOT_FOUND);
         }
-        // 统一使用 SHA-256 加密，与注册/登录保持一致
         String oldEncrypted = Sha256Util.encrypt(dto.getOldPassword());
         if (!oldEncrypted.equals(user.getPasswordHash())) {
-            throw new RuntimeException("原密码错误");
+            throw new BusinessException(400, "原密码错误");
         }
-        // 新密码同样使用 SHA-256
         user.setPasswordHash(Sha256Util.encrypt(dto.getNewPassword()));
         userMapper.updateById(user);
     }
 
     @Override
     public IPage<FavoriteVO> getFavorites(Long userId, Integer pageNo, Integer pageSize, Integer resourceType) {
-        // 1. 先查该用户所有收藏的 resourceId（不分页）
         LambdaQueryWrapper<UserFavoriteEntity> allWrapper = new LambdaQueryWrapper<UserFavoriteEntity>()
                 .eq(UserFavoriteEntity::getUserId, userId)
                 .select(UserFavoriteEntity::getResourceId);
@@ -124,10 +140,9 @@ public class UserCenterServiceImpl implements UserCenterService {
             return new Page<>(pageNo, pageSize, 0);
         }
 
-        // 2. 根据资源条件过滤，只保留符合条件的 resourceId
         LambdaQueryWrapper<ResourceEntity> resWrapper = new LambdaQueryWrapper<ResourceEntity>()
                 .in(ResourceEntity::getId, allResourceIds)
-                .eq(ResourceEntity::getStatus, 2);   // 只显示已发布的资源
+                .eq(ResourceEntity::getStatus, 2);
         if (resourceType != null) {
             resWrapper.eq(ResourceEntity::getType, resourceType);
         }
@@ -140,7 +155,6 @@ public class UserCenterServiceImpl implements UserCenterService {
             return new Page<>(pageNo, pageSize, 0);
         }
 
-        // 3. 再按过滤后的 resourceIds 分页查询收藏记录
         Page<UserFavoriteEntity> page = new Page<>(pageNo, pageSize);
         LambdaQueryWrapper<UserFavoriteEntity> wrapper = new LambdaQueryWrapper<UserFavoriteEntity>()
                 .eq(UserFavoriteEntity::getUserId, userId)
@@ -148,12 +162,12 @@ public class UserCenterServiceImpl implements UserCenterService {
                 .orderByDesc(UserFavoriteEntity::getCreateTime);
         IPage<UserFavoriteEntity> favoritePage = userFavoriteMapper.selectPage(page, wrapper);
 
-        // 4. 组装 VO（使用 Map 提高性能）
         Map<Long, ResourceEntity> resourceMap = resources.stream()
                 .collect(Collectors.toMap(ResourceEntity::getId, Function.identity()));
 
         List<FavoriteVO> voList = favoritePage.getRecords().stream().map(f -> {
             FavoriteVO vo = new FavoriteVO();
+            vo.setId(f.getId());
             vo.setResourceId(f.getResourceId());
             vo.setCreateTime(f.getCreateTime());
             ResourceEntity r = resourceMap.get(f.getResourceId());
@@ -161,6 +175,7 @@ public class UserCenterServiceImpl implements UserCenterService {
                 vo.setResourceName(r.getName());
                 vo.setResourceType(r.getType());
                 vo.setThumbnail(r.getThumbnail());
+                vo.setResourceTypeName(getResourceTypeName(r.getType()));
             }
             return vo;
         }).collect(Collectors.toList());
@@ -170,24 +185,35 @@ public class UserCenterServiceImpl implements UserCenterService {
         return result;
     }
 
+    private String getResourceTypeName(Integer type) {
+        if (type == null) return null;
+        switch (type) {
+            case 1: return "视频";
+            case 2: return "音频";
+            case 3: return "文档";
+            default: return null;
+        }
+    }
+
     @Override
     @Transactional
-    public void addFavorite(Long userId, Long resourceId) {
+    public Long addFavorite(Long userId, Long resourceId) {
         ResourceEntity resource = resourceMapper.selectById(resourceId);
         if (resource == null || !Objects.equals(resource.getStatus(), 2)) {
-            throw new RuntimeException("资源不存在或未发布");
+            throw new BusinessException(400, "资源不存在或未发布");
         }
         LambdaQueryWrapper<UserFavoriteEntity> wrapper = new LambdaQueryWrapper<UserFavoriteEntity>()
                 .eq(UserFavoriteEntity::getUserId, userId)
                 .eq(UserFavoriteEntity::getResourceId, resourceId);
         Long count = userFavoriteMapper.selectCount(wrapper);
         if (count > 0) {
-            throw new RuntimeException("已收藏该资源");
+            throw new BusinessException(400, "已收藏该资源");
         }
         UserFavoriteEntity favorite = new UserFavoriteEntity();
         favorite.setUserId(userId);
         favorite.setResourceId(resourceId);
         userFavoriteMapper.insert(favorite);
+        return favorite.getId(); // 返回新收藏ID
     }
 
     @Override
@@ -198,18 +224,16 @@ public class UserCenterServiceImpl implements UserCenterService {
                 .eq(UserFavoriteEntity::getResourceId, resourceId);
         int deleted = userFavoriteMapper.delete(wrapper);
         if (deleted == 0) {
-            throw new RuntimeException("收藏记录不存在");
+            throw new BusinessException(400, "收藏记录不存在");
         }
     }
 
     @Override
     public IPage<CourseVO> getCourses(Long userId, Integer pageNo, Integer pageSize, Integer status) {
         Page<CourseVO> page = new Page<>(pageNo, pageSize);
-        // 联表查询（通过实验报告关联排课、课程、教师）
         return labReportMapper.selectCourseVoPage(page, userId, status);
     }
 
-    // 在 UserCenterServiceImpl 中
     @Override
     public IPage<ExperimentVO> getExperiments(Long userId, Integer pageNo, Integer pageSize,
                                               Integer status, Long courseId) {
@@ -230,24 +254,37 @@ public class UserCenterServiceImpl implements UserCenterService {
         }
         wrapper.orderByDesc(UserMessage::getCreateTime);
         IPage<UserMessage> msgPage = userMessageMapper.selectPage(page, wrapper);
+
         List<MessageVO> voList = msgPage.getRecords().stream().map(m -> {
             MessageVO vo = new MessageVO();
             vo.setId(m.getId());
             vo.setTitle(m.getTitle());
             vo.setContent(m.getContent());
             vo.setType(m.getType());
+            vo.setTypeName(getMessageTypeName(m.getType()));
             vo.setIsRead(m.getIsRead());
             vo.setCreateTime(m.getCreateTime());
             return vo;
         }).collect(Collectors.toList());
+
         Page<MessageVO> result = new Page<>(pageNo, pageSize, msgPage.getTotal());
         result.setRecords(voList);
         return result;
     }
 
+    private String getMessageTypeName(Integer type) {
+        if (type == null) return null;
+        switch (type) {
+            case 1: return "审核通知";
+            case 2: return "课程提醒";
+            case 3: return "成绩通知";
+            default: return null;
+        }
+    }
+
     @Override
     @Transactional
-    public void markMessagesRead(Long userId, List<Long> messageIds) {
+    public int markMessagesRead(Long userId, List<Long> messageIds) {
         LambdaQueryWrapper<UserMessage> wrapper = new LambdaQueryWrapper<UserMessage>()
                 .eq(UserMessage::getUserId, userId);
         if (messageIds != null && !messageIds.isEmpty()) {
@@ -255,6 +292,126 @@ public class UserCenterServiceImpl implements UserCenterService {
         }
         UserMessage update = new UserMessage();
         update.setIsRead(1);
-        userMessageMapper.update(update, wrapper);
+        return userMessageMapper.update(update, wrapper);
+    }
+
+    @Override
+    public CourseVO getCourseDetail(Long userId, Long courseId) {
+        // 1. 获取当前用户信息
+        UserEntity user = userMapper.selectById(userId);
+        if (user == null) {
+            throw new BusinessException(GlobalErrorCodeConstants.NOT_FOUND);
+        }
+        Integer role = user.getRole();
+
+        // 2. 权限校验
+        boolean hasPermission = false;
+        if (role == 4) { // 管理员
+            hasPermission = true;
+        } else if (role == 2) { // 教师
+            CourseEntity course = courseMapper.selectById(courseId);
+            if (course != null && course.getTeacherId() != null && course.getTeacherId().equals(userId)) {
+                hasPermission = true;
+            }
+        } else if (role == 1) { // 学生
+            LambdaQueryWrapper<LabReport> reportWrapper = new LambdaQueryWrapper<>();
+            reportWrapper.eq(LabReport::getStudentId, userId)
+                    .inSql(LabReport::getScheduleId,
+                            "SELECT id FROM tc_plan_detail WHERE course_id = " + courseId);
+            Long count = labReportMapper.selectCount(reportWrapper);
+            if (count > 0) {
+                hasPermission = true;
+            }
+        }
+        if (!hasPermission) {
+            throw new BusinessException(GlobalErrorCodeConstants.NO_PERMISSION);
+        }
+
+        // 3. 查询课程信息
+        CourseEntity course = courseMapper.selectById(courseId);
+        if (course == null) {
+            throw new BusinessException(GlobalErrorCodeConstants.COURSE_NOT_FOUND);
+        }
+
+        // 4. 组装 CourseVO
+        CourseVO vo = new CourseVO();
+        BeanUtils.copyProperties(course, vo);
+        if (course.getTeacherId() != null) {
+            TeacherEntity teacher = teacherMapper.selectById(course.getTeacherId());
+            if (teacher != null) {
+                vo.setTeacherName(teacher.getName());
+            }
+        }
+        return vo;
+    }
+
+    @Override
+    public ExperimentVO getExperimentDetail(Long userId, Long experimentId) {
+        // 1. 获取当前用户信息
+        UserEntity user = userMapper.selectById(userId);
+        if (user == null) {
+            throw new BusinessException(GlobalErrorCodeConstants.NOT_FOUND);
+        }
+        Integer role = user.getRole();
+
+        // 2. 查询实验基本信息
+        Experiment experiment = experimentMapper.selectById(experimentId);
+        if (experiment == null) {
+            throw new BusinessException(GlobalErrorCodeConstants.EXPERIMENT_NOT_FOUND);
+        }
+
+        // 3. 权限校验
+        boolean hasPermission = false;
+        if (role == 4) { // 管理员
+            hasPermission = true;
+        } else if (role == 2) { // 教师：检查是否是该实验所属课程的教师
+            if (experiment.getCourseId() != null) {
+                CourseEntity course = courseMapper.selectById(experiment.getCourseId());
+                if (course != null && course.getTeacherId() != null && course.getTeacherId().equals(userId)) {
+                    hasPermission = true;
+                }
+            }
+        } else if (role == 1) { // 学生
+            LambdaQueryWrapper<LabReport> reportWrapper = new LambdaQueryWrapper<>();
+            reportWrapper.eq(LabReport::getStudentId, userId)
+                    .inSql(LabReport::getScheduleId,
+                            "SELECT id FROM tc_plan_detail WHERE experiment_id = " + experimentId);
+            LabReport report = labReportMapper.selectOne(reportWrapper);
+            if (report != null) {
+                hasPermission = true;
+                // 保留report用于后续填充
+            }
+        }
+        if (!hasPermission) {
+            throw new BusinessException(GlobalErrorCodeConstants.NO_PERMISSION);
+        }
+
+        // 4. 组装 VO
+        ExperimentVO vo = new ExperimentVO();
+        BeanUtils.copyProperties(experiment, vo);
+
+        if (experiment.getCourseId() != null) {
+            CourseEntity course = courseMapper.selectById(experiment.getCourseId());
+            if (course != null) {
+                vo.setCourseName(course.getCourseName());
+            }
+        }
+
+        // 如果是学生，填充报告信息（若已有报告）
+        if (role == 1) {
+            LambdaQueryWrapper<LabReport> reportWrapper = new LambdaQueryWrapper<>();
+            reportWrapper.eq(LabReport::getStudentId, userId)
+                    .inSql(LabReport::getScheduleId,
+                            "SELECT id FROM tc_plan_detail WHERE experiment_id = " + experimentId);
+            LabReport report = labReportMapper.selectOne(reportWrapper);
+            if (report != null) {
+                vo.setGrade(report.getScore());
+                vo.setEvaluationStatus(report.getEvaluationStatus());
+                vo.setSubmittedAt(report.getSubmittedAt());
+                vo.setReport(report.getReportContent());
+            }
+        }
+
+        return vo;
     }
 }

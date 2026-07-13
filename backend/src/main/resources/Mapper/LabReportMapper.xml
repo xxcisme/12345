@@ -3,19 +3,27 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.uestc.group14.backend.dao.LabReportMapper">
 
+    <!-- 查询实验列表 -->
     <select id="selectExperimentVoPage" resultType="com.uestc.group14.backend.vo.ExperimentVO">
         SELECT
-        r.id,
+        e.id,
+        e.number,
         e.name AS name,
+        e.course_id AS courseId,
         c.course_name AS courseName,
+        e.objective,
+        e.status,
+        e.create_time AS createTime,
+        e.update_time AS updateTime,
         r.submitted_at AS submittedAt,
-        r.score,
+        r.score AS grade,
         r.evaluation_status AS evaluationStatus
-        FROM tc_lab_report r
-        LEFT JOIN tc_plan_detail pd ON pd.id = r.schedule_id
-        LEFT JOIN tc_experiment e ON e.id = pd.experiment_id
-        LEFT JOIN tc_course c ON c.id = pd.course_id
+        FROM tc_experiment e
+        INNER JOIN tc_plan_detail pd ON pd.experiment_id = e.id
+        INNER JOIN tc_lab_report r ON r.schedule_id = pd.id
+        INNER JOIN tc_course c ON c.id = pd.course_id
         WHERE r.student_id = #{studentId}
+        AND e.status = 1
         <if test="status != null">
             AND r.evaluation_status = #{status}
         </if>
@@ -24,22 +32,33 @@
         </if>
         ORDER BY r.create_time DESC
     </select>
-    <!-- 追加到 LabReportMapper.xml -->
+
+    <!-- 查询课程列表 -->
     <select id="selectCourseVoPage" resultType="com.uestc.group14.backend.vo.CourseVO">
         SELECT DISTINCT
         c.id,
+        c.course_code AS courseCode,
         c.course_name AS courseName,
+        c.course_type AS courseType,
+        c.class_hours AS classHours,
+        c.credit,
+        c.teacher_id AS teacherId,
         t.name AS teacherName,
-        <!-- 假设 student_course 表原有一个 status 字段，但这里我们没有，可以取报告状态或默认值 -->
-        CASE WHEN COUNT(r.id) > 0 THEN 1 ELSE 0 END AS status
+        c.status,
+        c.create_time AS createTime,
+        c.update_time AS updateTime
+        FROM tc_course c
+        LEFT JOIN tc_teacher t ON t.id = c.teacher_id
+        WHERE c.id IN (
+        SELECT DISTINCT pd.course_id
         FROM tc_lab_report r
         INNER JOIN tc_plan_detail pd ON pd.id = r.schedule_id
-        INNER JOIN tc_course c ON c.id = pd.course_id
-        LEFT JOIN tc_teacher t ON t.id = c.teacher_id
         WHERE r.student_id = #{studentId}
+        )
         <if test="status != null">
-            AND r.evaluation_status = #{status}   <!-- 如果用报告状态筛选，可调整 -->
+            AND c.status = #{status}
         </if>
-        GROUP BY c.id, c.course_name, t.name
+        ORDER BY c.create_time DESC
     </select>
+
 </mapper>
