@@ -16,6 +16,7 @@ public class UserEntity {
     private Integer role;
     private String phone;
     private String email;
+    @TableField("statu")
     private Integer status;
     private LocalDateTime lastLoginTime;
     private String lastLoginIp;
