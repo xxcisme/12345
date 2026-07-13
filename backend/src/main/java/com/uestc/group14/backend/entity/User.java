@@ -2,6 +2,7 @@ package com.uestc.group14.backend.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -71,4 +72,6 @@ public class User {
      * 更新时间
      */
     private LocalDateTime updateTime;
+    @TableLogic
+    private Integer delFlag;
 }

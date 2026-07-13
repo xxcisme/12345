@@ -23,6 +23,11 @@ public class RegisterRequest extends User {
 
     /** 真实姓名 */
     private String realName;
+    /** 学校编号 */
+    private String schoolCode;
+
+    /** 班级名称 */
+    private String className;
 
     /** 页码 */
     private Integer pageNo;

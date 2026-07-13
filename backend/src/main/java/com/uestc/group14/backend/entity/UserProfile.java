@@ -35,7 +35,7 @@ public class UserProfile {
     /**
      * 学校编号
      */
-    private String SchoolCode;
+    private String schoolCode;
 
     /**
      * 班级名称
@@ -50,7 +50,7 @@ public class UserProfile {
     /**
      * 职业类型
      */
-    private String OccupationType;
+    private String occupationType;
 
     /**
      * 创建时间
