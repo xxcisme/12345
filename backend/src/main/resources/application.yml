@@ -1,3 +1,5 @@
+
+
 spring:
   application:
     name: backend
@@ -9,6 +11,12 @@ spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/vtp?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=UTC
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema.sql
+      data-locations: classpath:data.sql
+      continue-on-error: false
 
 springdoc:
   api-docs:
@@ -26,3 +34,7 @@ mybatis-plus:
   global-config:
     db-config:
       id-type: auto
+
+jwt:
+  secret: your-256-bit-secret-key-change-this-in-production-environment-must-be-256-bit
+  expiration: 86400000  # 24小时（毫秒）
