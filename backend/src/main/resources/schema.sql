@@ -1,10 +1,12 @@
 -- ============================================================
 -- 虚拟仿真实训教学管理及资源共享云平台 - 建表脚本
--- 依据：《数据库设计说明书》v2.0
--- 说明：严格按文档字段名、类型、约束，按依赖顺序创建
+-- 依据：《数据库设计说明书》v2.1
+-- 表总数：21张
 -- ============================================================
 
--- 基础表（无外键依赖） -------------------------------------
+-- ============================================================
+-- 一、基础表（无外键依赖）
+-- ============================================================
 
 -- 1. 用户主表
 CREATE TABLE IF NOT EXISTS `sm_user` (
@@ -19,6 +21,7 @@ CREATE TABLE IF NOT EXISTS `sm_user` (
     `last_login_ip` VARCHAR(50) DEFAULT NULL COMMENT '最后登录IP',
     `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    `del_flag` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '删除标记：0-未删除，1-已删除',
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_username` (`username`),
     UNIQUE KEY `uk_phone` (`phone`)
@@ -40,6 +43,7 @@ CREATE TABLE IF NOT EXISTS `res_resource` (
     `profile` LONGTEXT DEFAULT NULL COMMENT '概要介绍',
     `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    `del_flag` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '删除标记：0-未删除，1-已删除',
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_number` (`number`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='资源主表';
@@ -56,6 +60,7 @@ CREATE TABLE IF NOT EXISTS `res_laboratory` (
     `description` LONGTEXT DEFAULT NULL COMMENT '概要介绍（富文本）',
     `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    `del_flag` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '删除标记：0-未删除，1-已删除',
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_number` (`number`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='实验室表';
@@ -65,7 +70,7 @@ CREATE TABLE IF NOT EXISTS `tc_teacher` (
                                             `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '师资主键ID',
                                             `teacher_id` VARCHAR(30) DEFAULT NULL COMMENT '教师ID',
     `name` VARCHAR(10) NOT NULL COMMENT '姓名',
-    `type` VARCHAR(30) DEFAULT NULL COMMENT '师资类型（0-实训老师，1-非实训老师）',
+    `type` VARCHAR(30) DEFAULT NULL COMMENT '师资类型：0-实训老师，1-非实训老师',
     `phone` VARCHAR(11) NOT NULL COMMENT '手机号',
     `email` VARCHAR(255) DEFAULT NULL COMMENT '邮箱',
     `company` VARCHAR(100) DEFAULT NULL COMMENT '所在单位',
@@ -83,12 +88,18 @@ CREATE TABLE IF NOT EXISTS `tc_course` (
                                            `course_code` VARCHAR(50) DEFAULT NULL COMMENT '课程编号',
     `course_name` VARCHAR(255) NOT NULL COMMENT '课程名称',
     `course_type` VARCHAR(100) DEFAULT NULL COMMENT '课程类型',
+    `class_hours` INT DEFAULT NULL COMMENT '课时',
+    `credit` DECIMAL(3,1) DEFAULT NULL COMMENT '学分',
+    `teacher_id` BIGINT NOT NULL COMMENT '负责教师ID',
     `introduction` LONGTEXT DEFAULT NULL COMMENT '课程介绍',
-    `charge_flag` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '是否已排课：0-未排，1-已排',
+    `outline` LONGTEXT DEFAULT NULL COMMENT '课程大纲',
+    `status` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '课程状态：0-草稿，1-已发布，2-已下架',
     `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_course_code` (`course_code`)
+    UNIQUE KEY `uk_course_code` (`course_code`),
+    KEY `idx_teacher_id` (`teacher_id`),
+    CONSTRAINT `fk_course_teacher` FOREIGN KEY (`teacher_id`) REFERENCES `tc_teacher` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='课程表';
 
 -- 6. 实验表
@@ -96,14 +107,17 @@ CREATE TABLE IF NOT EXISTS `tc_experiment` (
                                                `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '实验主键ID',
                                                `number` VARCHAR(50) DEFAULT NULL COMMENT '实验编号',
     `name` VARCHAR(255) NOT NULL COMMENT '实验名称',
-    `category` VARCHAR(100) DEFAULT NULL COMMENT '专业',
-    `experiment_type` VARCHAR(50) DEFAULT NULL COMMENT '实验类型',
-    `profile` VARCHAR(500) DEFAULT NULL COMMENT '简介',
-    `description` LONGTEXT DEFAULT NULL COMMENT '实验介绍',
+    `course_id` BIGINT DEFAULT NULL COMMENT '所属课程ID',
+    `objective` VARCHAR(500) DEFAULT NULL COMMENT '实验目标',
+    `steps` LONGTEXT DEFAULT NULL COMMENT '实验步骤',
+    `report_template` LONGTEXT DEFAULT NULL COMMENT '报告模板',
+    `status` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '实验状态：0-草稿，1-已发布',
     `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_number` (`number`)
+    UNIQUE KEY `uk_number` (`number`),
+    KEY `idx_course_id` (`course_id`),
+    CONSTRAINT `fk_experiment_course` FOREIGN KEY (`course_id`) REFERENCES `tc_course` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='实验表';
 
 -- 7. 班级表
@@ -116,41 +130,55 @@ CREATE TABLE IF NOT EXISTS `tc_class` (
     PRIMARY KEY (`id`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='班级表';
 
--- 8. 新闻公告表
+-- 8. 新闻表
 CREATE TABLE IF NOT EXISTS `sys_news` (
                                           `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '新闻主键ID',
-                                          `type` TINYINT(1) NOT NULL COMMENT '新闻类型：0-新闻，1-公告',
-    `title` VARCHAR(255) NOT NULL COMMENT '标题',
+                                          `title` VARCHAR(255) NOT NULL COMMENT '标题',
     `origin` VARCHAR(255) DEFAULT NULL COMMENT '来源',
     `editor` VARCHAR(50) DEFAULT NULL COMMENT '编辑人员',
-    `enclosure` VARCHAR(500) DEFAULT NULL COMMENT '附件地址',
+    `enclosure` VARCHAR(500) DEFAULT NULL COMMENT '图片地址',
     `content` LONGTEXT NOT NULL COMMENT '内容',
     `publish_time` DATETIME DEFAULT NULL COMMENT '发布时间',
     `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (`id`)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='新闻公告表';
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='新闻表';
 
--- 依赖表（有外键引用） -------------------------------------
+-- 9. 公告表
+CREATE TABLE IF NOT EXISTS `sys_notice` (
+                                            `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '公告主键ID',
+                                            `title` VARCHAR(255) NOT NULL COMMENT '标题',
+    `editor` VARCHAR(50) DEFAULT NULL COMMENT '编辑人员',
+    `content` LONGTEXT NOT NULL COMMENT '内容',
+    `publish_time` DATETIME DEFAULT NULL COMMENT '发布时间',
+    `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='公告表';
 
--- 9. 用户详细信息表（依赖 sm_user, tc_class）
+-- ============================================================
+-- 二、依赖表（有外键引用）
+-- ============================================================
+
+-- 10. 用户详细信息表（依赖 sm_user, tc_class）
 CREATE TABLE IF NOT EXISTS `sm_user_profile` (
                                                  `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '详情主键ID',
                                                  `user_id` BIGINT NOT NULL COMMENT '用户ID',
                                                  `real_name` VARCHAR(30) NOT NULL COMMENT '真实姓名',
     `school_code` VARCHAR(50) DEFAULT NULL COMMENT '学校编号',
     `class_name` VARCHAR(255) DEFAULT NULL COMMENT '班级名称',
-    `class_id` BIGINT DEFAULT NULL COMMENT '班级ID（关联tc_class）',
+    `class_id` BIGINT DEFAULT NULL COMMENT '班级ID',
     `occupation_type` VARCHAR(50) DEFAULT NULL COMMENT '职业类型',
     `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (`id`),
     KEY `idx_user_id` (`user_id`),
+    KEY `idx_class_id` (`class_id`),
     CONSTRAINT `fk_profile_user` FOREIGN KEY (`user_id`) REFERENCES `sm_user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT `fk_profile_class` FOREIGN KEY (`class_id`) REFERENCES `tc_class` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户详细信息表';
 
--- 10. 用户收藏表（依赖 sm_user, res_resource）
+-- 11. 用户收藏表（依赖 sm_user, res_resource）
 CREATE TABLE IF NOT EXISTS `sm_user_favorite` (
                                                   `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '收藏主键ID',
                                                   `user_id` BIGINT NOT NULL COMMENT '用户ID',
@@ -162,7 +190,7 @@ CREATE TABLE IF NOT EXISTS `sm_user_favorite` (
     CONSTRAINT `fk_fav_resource` FOREIGN KEY (`resource_id`) REFERENCES `res_resource` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户收藏表';
 
--- 11. 用户消息表（依赖 sm_user）
+-- 12. 用户消息表（依赖 sm_user）
 CREATE TABLE IF NOT EXISTS `sm_user_message` (
                                                  `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '消息主键ID',
                                                  `user_id` BIGINT NOT NULL COMMENT '用户ID',
@@ -176,7 +204,7 @@ CREATE TABLE IF NOT EXISTS `sm_user_message` (
     CONSTRAINT `fk_msg_user` FOREIGN KEY (`user_id`) REFERENCES `sm_user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户消息表';
 
--- 12. 资源评分表（依赖 sm_user, res_resource）
+-- 13. 资源评分表（依赖 sm_user, res_resource）
 CREATE TABLE IF NOT EXISTS `res_rating` (
                                             `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '评分主键ID',
                                             `user_id` BIGINT NOT NULL COMMENT '用户ID',
@@ -190,7 +218,7 @@ CREATE TABLE IF NOT EXISTS `res_rating` (
     CONSTRAINT `fk_rating_resource` FOREIGN KEY (`resource_id`) REFERENCES `res_resource` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='资源评分表';
 
--- 13. 媒体资源详情表（依赖 res_resource）
+-- 14. 媒体资源详情表（依赖 res_resource）
 CREATE TABLE IF NOT EXISTS `res_media` (
                                            `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
                                            `resource_id` BIGINT NOT NULL COMMENT '资源ID',
@@ -200,7 +228,7 @@ CREATE TABLE IF NOT EXISTS `res_media` (
     CONSTRAINT `fk_media_resource` FOREIGN KEY (`resource_id`) REFERENCES `res_resource` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='媒体资源详情表';
 
--- 14. 设备管理表（依赖 res_laboratory）
+-- 15. 设备管理表（依赖 res_laboratory）
 CREATE TABLE IF NOT EXISTS `res_device` (
                                             `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '设备主键ID',
                                             `number` VARCHAR(30) DEFAULT NULL COMMENT '设备编号',
@@ -211,12 +239,13 @@ CREATE TABLE IF NOT EXISTS `res_device` (
     `status` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '设备状态：0-空闲，1-使用中，2-保修，3-损坏',
     `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    `del_flag` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '删除标记：0-未删除，1-已删除',
     PRIMARY KEY (`id`),
     KEY `idx_laboratory_id` (`laboratory_id`),
     CONSTRAINT `fk_device_lab` FOREIGN KEY (`laboratory_id`) REFERENCES `res_laboratory` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='设备管理表';
 
--- 15. 实验室申请表（依赖 res_laboratory）
+-- 16. 实验室申请表（依赖 res_laboratory）
 CREATE TABLE IF NOT EXISTS `res_lab_application` (
                                                      `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '申请主键ID',
                                                      `number` VARCHAR(50) DEFAULT NULL COMMENT '申请编号',
@@ -225,9 +254,8 @@ CREATE TABLE IF NOT EXISTS `res_lab_application` (
     `contact_phone` VARCHAR(11) NOT NULL COMMENT '联系电话',
     `purpose` LONGTEXT DEFAULT NULL COMMENT '申请说明',
     `name` VARCHAR(255) NOT NULL COMMENT '实验名称',
-    `experiment_type` VARCHAR(50) DEFAULT NULL COMMENT '实验类型',
-    `profile` VARCHAR(500) DEFAULT NULL COMMENT '简介',
-    `description` LONGTEXT DEFAULT NULL COMMENT '实验介绍',
+    `objective` VARCHAR(500) DEFAULT NULL COMMENT '实验目标',
+    `steps` LONGTEXT DEFAULT NULL COMMENT '实验步骤',
     `start_time` DATETIME NOT NULL COMMENT '使用开始时间',
     `end_time` DATETIME NOT NULL COMMENT '使用结束时间',
     `status` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '审批状态：0-待审批，1-已通过，2-已拒绝',
@@ -240,77 +268,44 @@ CREATE TABLE IF NOT EXISTS `res_lab_application` (
     CONSTRAINT `fk_app_lab` FOREIGN KEY (`lab_id`) REFERENCES `res_laboratory` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='实验室申请表';
 
--- 16. 课程-实验关联表（依赖 tc_course, tc_experiment）
-CREATE TABLE IF NOT EXISTS `tc_course_experiment` (
-                                                      `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '关联主键ID',
-                                                      `course_id` BIGINT NOT NULL COMMENT '课程ID',
-                                                      `experiment_id` BIGINT NOT NULL COMMENT '实验ID',
-                                                      `sort_order` INT NOT NULL DEFAULT 0 COMMENT '排序权重',
-                                                      `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-                                                      `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-                                                      PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_course_experiment` (`course_id`, `experiment_id`),
-    CONSTRAINT `fk_ce_course` FOREIGN KEY (`course_id`) REFERENCES `tc_course` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT `fk_ce_experiment` FOREIGN KEY (`experiment_id`) REFERENCES `tc_experiment` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='课程-实验关联表';
-
--- 17. 学生-课程关联表（依赖 sm_user, tc_course）
-CREATE TABLE IF NOT EXISTS `tc_student_course` (
-                                                   `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '关联主键ID',
-                                                   `student_id` BIGINT NOT NULL COMMENT '学生ID（关联sm_user）',
-                                                   `course_id` BIGINT NOT NULL COMMENT '课程ID',
-                                                   `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-                                                   PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_student_course` (`student_id`, `course_id`),
-    CONSTRAINT `fk_sc_student` FOREIGN KEY (`student_id`) REFERENCES `sm_user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT `fk_sc_course` FOREIGN KEY (`course_id`) REFERENCES `tc_course` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='学生-课程关联表';
-
--- 18. 教学计划表（依赖 tc_course, tc_teacher）
+-- 17. 教学计划表（依赖 tc_class, sm_user）
 CREATE TABLE IF NOT EXISTS `tc_teaching_plan` (
                                                   `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '计划主键ID',
                                                   `name` VARCHAR(255) NOT NULL COMMENT '计划名称',
-    `semester` VARCHAR(50) DEFAULT NULL COMMENT '学期',
-    `course_id` BIGINT NOT NULL COMMENT '课程ID',
-    `teacher_id` BIGINT NOT NULL COMMENT '创建教师ID',
+    `semester` VARCHAR(50) NOT NULL COMMENT '学期',
+    `class_id` BIGINT NOT NULL COMMENT '班级ID',
+    `create_id` BIGINT NOT NULL COMMENT '创建人ID',
+    `start_date` DATE NOT NULL COMMENT '开始日期',
+    `end_date` DATE NOT NULL COMMENT '结束日期',
     `status` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '计划状态：0-草稿，1-已发布',
     `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (`id`),
-    KEY `idx_course_id` (`course_id`),
-    KEY `idx_teacher_id` (`teacher_id`),
-    CONSTRAINT `fk_plan_course` FOREIGN KEY (`course_id`) REFERENCES `tc_course` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT `fk_plan_teacher` FOREIGN KEY (`teacher_id`) REFERENCES `tc_teacher` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+    KEY `idx_class_id` (`class_id`),
+    KEY `idx_create_id` (`create_id`),
+    CONSTRAINT `fk_plan_class` FOREIGN KEY (`class_id`) REFERENCES `tc_class` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT `fk_plan_creator` FOREIGN KEY (`create_id`) REFERENCES `sm_user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='教学计划表';
 
--- 19. 教学排课计划表（依赖 tc_course, tc_experiment, tc_class, tc_teacher, res_laboratory）
-CREATE TABLE IF NOT EXISTS `tc_schedule` (
-                                             `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '排课主键ID',
-                                             `course_id` BIGINT NOT NULL COMMENT '课程ID',
-                                             `experiment_id` BIGINT NOT NULL COMMENT '实验ID',
-                                             `class_id` BIGINT NOT NULL COMMENT '班级ID',
-                                             `teacher_id` BIGINT NOT NULL COMMENT '实训老师ID',
-                                             `lab_id` BIGINT NOT NULL COMMENT '实验室ID',
-                                             `schedule_date` DATE NOT NULL COMMENT '实训日期',
-                                             `start_time` TIME NOT NULL COMMENT '开始时间',
-                                             `end_time` TIME NOT NULL COMMENT '结束时间',
-                                             `class_hours` INT DEFAULT NULL COMMENT '课时',
-                                             `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-                                             `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-                                             PRIMARY KEY (`id`),
+-- 18. 教学计划排课明细表（依赖 tc_teaching_plan, tc_course, tc_experiment）
+CREATE TABLE IF NOT EXISTS `tc_plan_detail` (
+                                                `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '排课主键ID',
+                                                `plan_id` BIGINT NOT NULL COMMENT '所属计划ID',
+                                                `course_id` BIGINT NOT NULL COMMENT '课程ID',
+                                                `experiment_id` BIGINT NOT NULL COMMENT '实验ID',
+                                                `schedule_date` DATE NOT NULL COMMENT '上课日期',
+                                                `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+                                                `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+                                                PRIMARY KEY (`id`),
+    KEY `idx_plan_id` (`plan_id`),
     KEY `idx_course_id` (`course_id`),
     KEY `idx_experiment_id` (`experiment_id`),
-    KEY `idx_class_id` (`class_id`),
-    KEY `idx_teacher_id` (`teacher_id`),
-    KEY `idx_lab_id` (`lab_id`),
-    CONSTRAINT `fk_schedule_course` FOREIGN KEY (`course_id`) REFERENCES `tc_course` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT `fk_schedule_experiment` FOREIGN KEY (`experiment_id`) REFERENCES `tc_experiment` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT `fk_schedule_class` FOREIGN KEY (`class_id`) REFERENCES `tc_class` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT `fk_schedule_teacher` FOREIGN KEY (`teacher_id`) REFERENCES `tc_teacher` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT `fk_schedule_lab` FOREIGN KEY (`lab_id`) REFERENCES `res_laboratory` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='教学排课计划表';
+    CONSTRAINT `fk_detail_plan` FOREIGN KEY (`plan_id`) REFERENCES `tc_teaching_plan` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT `fk_detail_course` FOREIGN KEY (`course_id`) REFERENCES `tc_course` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT `fk_detail_experiment` FOREIGN KEY (`experiment_id`) REFERENCES `tc_experiment` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='教学计划排课明细表';
 
--- 20. 实验报告表（依赖 tc_schedule, sm_user）
+-- 19. 实验报告表（依赖 tc_plan_detail, sm_user）
 CREATE TABLE IF NOT EXISTS `tc_lab_report` (
                                                `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '报告主键ID',
                                                `schedule_id` BIGINT NOT NULL COMMENT '排课ID',
@@ -318,34 +313,34 @@ CREATE TABLE IF NOT EXISTS `tc_lab_report` (
                                                `report_content` LONGTEXT DEFAULT NULL COMMENT '报告详情',
                                                `attachment` VARCHAR(500) DEFAULT NULL COMMENT '报告附件',
     `score` DECIMAL(5,2) DEFAULT NULL COMMENT '成绩（分）',
-    `status` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '评定状态：0-待评定，1-已通过，2-未通过',
+    `evaluation_status` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '评定状态：0-待评定，1-已评定',
     `submitted_at` DATETIME DEFAULT NULL COMMENT '提交时间',
     `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     PRIMARY KEY (`id`),
     KEY `idx_schedule_id` (`schedule_id`),
     KEY `idx_student_id` (`student_id`),
-    CONSTRAINT `fk_report_schedule` FOREIGN KEY (`schedule_id`) REFERENCES `tc_schedule` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT `fk_report_schedule` FOREIGN KEY (`schedule_id`) REFERENCES `tc_plan_detail` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT `fk_report_student` FOREIGN KEY (`student_id`) REFERENCES `sm_user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='实验报告表';
 
--- 21. 成绩评定表（依赖 tc_schedule, sm_user）
+-- 20. 成绩评定表（依赖 tc_plan_detail, sm_user）
 CREATE TABLE IF NOT EXISTS `tc_grade` (
                                           `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '评定主键ID',
                                           `schedule_id` BIGINT NOT NULL COMMENT '排课ID',
                                           `student_id` BIGINT NOT NULL COMMENT '学生ID',
                                           `overall_score` DECIMAL(5,2) DEFAULT NULL COMMENT '综合成绩',
-    `comment` VARCHAR(500) DEFAULT NULL COMMENT '评定信息',
-    `status` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '评定状态：0-未发布，1-已发布',
+    `comment` VARCHAR(500) DEFAULT NULL COMMENT '评语',
+    `publish_status` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '发布状态：0-未发布，1-已发布',
     `graded_at` DATETIME DEFAULT NULL COMMENT '评定时间',
     `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_schedule_student` (`schedule_id`, `student_id`),
-    CONSTRAINT `fk_grade_schedule` FOREIGN KEY (`schedule_id`) REFERENCES `tc_schedule` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT `fk_grade_schedule` FOREIGN KEY (`schedule_id`) REFERENCES `tc_plan_detail` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT `fk_grade_student` FOREIGN KEY (`student_id`) REFERENCES `sm_user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='成绩评定表';
 
--- 22. 操作日志表（依赖 sm_user）
+-- 21. 操作日志表（依赖 sm_user）
 CREATE TABLE IF NOT EXISTS `sys_operation_log` (
                                                    `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '日志主键ID',
                                                    `user_id` BIGINT DEFAULT NULL COMMENT '用户ID',
