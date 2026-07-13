@@ -6,19 +6,16 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-@TableName("tc_teacher")
-public class TeacherEntity {
+@TableName("sys_notice")
+public class Notice {
 
     @TableId(type = IdType.AUTO)
     private Long id;
 
-    private String teacherId;
-    private String name;
-    private String type;       // 0实训老师，1非实训老师
-    private String phone;
-    private String email;
-    private String company;
-    private Integer onJob;     // 0离职 1在职
+    private String title;
+    private String editor;
+    private String content;
+    private LocalDateTime publishTime;
 
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;

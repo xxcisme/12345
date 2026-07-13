@@ -5,7 +5,8 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.uestc.group14.backend.Entity.*;
 import com.uestc.group14.backend.common.enums.GlobalErrorCodeConstants;
-import com.uestc.group14.backend.common.utils.Md5Util;
+// 移除 Md5Util 导入，改用 Sha256Util
+import com.uestc.group14.backend.common.utils.Sha256Util;
 import com.uestc.group14.backend.dao.*;
 import com.uestc.group14.backend.dto.*;
 import com.uestc.group14.backend.service.UserCenterService;
@@ -16,7 +17,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -31,7 +34,6 @@ public class UserCenterServiceImpl implements UserCenterService {
     private final ExperimentMapper experimentMapper;
     private final GradeMapper gradeMapper;
     private final LabReportMapper labReportMapper;
-    private final StudentCourseMapper studentCourseMapper;
     private final UserMessageMapper userMessageMapper;
 
     @Override
@@ -87,7 +89,9 @@ public class UserCenterServiceImpl implements UserCenterService {
         userProfileMapper.insertOrUpdate(profile);
     }
 
+    // ==================== ★ 修改点：changePassword 方法 ====================
     @Override
+    @Transactional
     public void changePassword(Long userId, ChangePasswordDTO dto) {
         if (!Objects.equals(dto.getNewPassword(), dto.getConfirmPassword())) {
             throw new RuntimeException("两次输入密码不一致");
@@ -96,46 +100,68 @@ public class UserCenterServiceImpl implements UserCenterService {
         if (user == null) {
             throw new RuntimeException(GlobalErrorCodeConstants.NOT_FOUND.getMsg());
         }
-        String oldEncrypted = Md5Util.encrypt(dto.getOldPassword());
+        // 统一使用 SHA-256 加密，与注册/登录保持一致
+        String oldEncrypted = Sha256Util.encrypt(dto.getOldPassword());
         if (!oldEncrypted.equals(user.getPasswordHash())) {
             throw new RuntimeException("原密码错误");
         }
-        user.setPasswordHash(Md5Util.encrypt(dto.getNewPassword()));
+        // 新密码同样使用 SHA-256
+        user.setPasswordHash(Sha256Util.encrypt(dto.getNewPassword()));
         userMapper.updateById(user);
     }
 
     @Override
     public IPage<FavoriteVO> getFavorites(Long userId, Integer pageNo, Integer pageSize, Integer resourceType) {
-        Page<UserFavoriteEntity> page = new Page<>(pageNo, pageSize);
-        LambdaQueryWrapper<UserFavoriteEntity> wrapper = new LambdaQueryWrapper<UserFavoriteEntity>()
+        // 1. 先查该用户所有收藏的 resourceId（不分页）
+        LambdaQueryWrapper<UserFavoriteEntity> allWrapper = new LambdaQueryWrapper<UserFavoriteEntity>()
                 .eq(UserFavoriteEntity::getUserId, userId)
-                .orderByDesc(UserFavoriteEntity::getCreateTime);
-        IPage<UserFavoriteEntity> favoritePage = userFavoriteMapper.selectPage(page, wrapper);
+                .select(UserFavoriteEntity::getResourceId);
+        List<Long> allResourceIds = userFavoriteMapper.selectList(allWrapper).stream()
+                .map(UserFavoriteEntity::getResourceId)
+                .collect(Collectors.toList());
 
-        if (favoritePage.getRecords().isEmpty()) {
+        if (allResourceIds.isEmpty()) {
             return new Page<>(pageNo, pageSize, 0);
         }
-        List<Long> resourceIds = favoritePage.getRecords().stream()
-                .map(UserFavoriteEntity::getResourceId).collect(Collectors.toList());
 
+        // 2. 根据资源条件过滤，只保留符合条件的 resourceId
         LambdaQueryWrapper<ResourceEntity> resWrapper = new LambdaQueryWrapper<ResourceEntity>()
-                .in(ResourceEntity::getId, resourceIds)
-                .eq(ResourceEntity::getStatus, 2); // 只显示已发布
+                .in(ResourceEntity::getId, allResourceIds)
+                .eq(ResourceEntity::getStatus, 2);   // 只显示已发布的资源
         if (resourceType != null) {
             resWrapper.eq(ResourceEntity::getType, resourceType);
         }
         List<ResourceEntity> resources = resourceMapper.selectList(resWrapper);
+        List<Long> filteredResourceIds = resources.stream()
+                .map(ResourceEntity::getId)
+                .collect(Collectors.toList());
 
-        List<FavoriteVO> voList = resources.stream().map(r -> {
+        if (filteredResourceIds.isEmpty()) {
+            return new Page<>(pageNo, pageSize, 0);
+        }
+
+        // 3. 再按过滤后的 resourceIds 分页查询收藏记录
+        Page<UserFavoriteEntity> page = new Page<>(pageNo, pageSize);
+        LambdaQueryWrapper<UserFavoriteEntity> wrapper = new LambdaQueryWrapper<UserFavoriteEntity>()
+                .eq(UserFavoriteEntity::getUserId, userId)
+                .in(UserFavoriteEntity::getResourceId, filteredResourceIds)
+                .orderByDesc(UserFavoriteEntity::getCreateTime);
+        IPage<UserFavoriteEntity> favoritePage = userFavoriteMapper.selectPage(page, wrapper);
+
+        // 4. 组装 VO（使用 Map 提高性能）
+        Map<Long, ResourceEntity> resourceMap = resources.stream()
+                .collect(Collectors.toMap(ResourceEntity::getId, Function.identity()));
+
+        List<FavoriteVO> voList = favoritePage.getRecords().stream().map(f -> {
             FavoriteVO vo = new FavoriteVO();
-            vo.setResourceId(r.getId());
-            vo.setResourceName(r.getName());
-            vo.setResourceType(r.getType());
-            vo.setThumbnail(r.getThumbnail());
-            favoritePage.getRecords().stream()
-                    .filter(f -> Objects.equals(f.getResourceId(), r.getId()))
-                    .findFirst()
-                    .ifPresent(f -> vo.setCreateTime(f.getCreateTime()));
+            vo.setResourceId(f.getResourceId());
+            vo.setCreateTime(f.getCreateTime());
+            ResourceEntity r = resourceMap.get(f.getResourceId());
+            if (r != null) {
+                vo.setResourceName(r.getName());
+                vo.setResourceType(r.getType());
+                vo.setThumbnail(r.getThumbnail());
+            }
             return vo;
         }).collect(Collectors.toList());
 
@@ -178,69 +204,17 @@ public class UserCenterServiceImpl implements UserCenterService {
 
     @Override
     public IPage<CourseVO> getCourses(Long userId, Integer pageNo, Integer pageSize, Integer status) {
-        Page<StudentCourse> page = new Page<>(pageNo, pageSize);
-        LambdaQueryWrapper<StudentCourse> wrapper = new LambdaQueryWrapper<StudentCourse>()
-                .eq(StudentCourse::getStudentId, userId);
-        if (status != null) {
-            wrapper.eq(StudentCourse::getStatus, status);
-        }
-        wrapper.orderByDesc(StudentCourse::getCreateTime);
-        IPage<StudentCourse> scPage = studentCourseMapper.selectPage(page, wrapper);
-        if (scPage.getRecords().isEmpty()) {
-            return new Page<>(pageNo, pageSize, 0);
-        }
-        List<Long> courseIds = scPage.getRecords().stream()
-                .map(StudentCourse::getCourseId).collect(Collectors.toList());
-        List<CourseEntity> courses = courseMapper.selectBatchIds(courseIds);
-
-        // 获取教师名称（此处简化，实际可联查teacher表）
-        List<CourseVO> voList = courses.stream().map(c -> {
-            CourseVO vo = new CourseVO();
-            vo.setId(c.getId());
-            vo.setCourseName(c.getCourseName());
-            vo.setTeacherName("教师"); // 如需真实名称，可注入TeacherMapper查询
-            scPage.getRecords().stream()
-                    .filter(sc -> Objects.equals(sc.getCourseId(), c.getId()))
-                    .findFirst()
-                    .ifPresent(sc -> vo.setStatus(sc.getStatus()));
-            return vo;
-        }).collect(Collectors.toList());
-
-        Page<CourseVO> result = new Page<>(pageNo, pageSize, scPage.getTotal());
-        result.setRecords(voList);
-        return result;
+        Page<CourseVO> page = new Page<>(pageNo, pageSize);
+        // 联表查询（通过实验报告关联排课、课程、教师）
+        return labReportMapper.selectCourseVoPage(page, userId, status);
     }
 
+    // 在 UserCenterServiceImpl 中
     @Override
-    public IPage<ExperimentVO> getExperiments(Long userId, Integer pageNo, Integer pageSize, Integer status, Long courseId) {
-        // 通过实验室报告表关联查询，此处简化为直接查询报告表
-        Page<LabReport> page = new Page<>(pageNo, pageSize);
-        LambdaQueryWrapper<LabReport> wrapper = new LambdaQueryWrapper<LabReport>()
-                .eq(LabReport::getStudentId, userId);
-        if (courseId != null) {
-            // 需要关联实验表，此处略（可先查实验ID再过滤）
-        }
-        wrapper.orderByDesc(LabReport::getCreateTime);
-        IPage<LabReport> reportPage = labReportMapper.selectPage(page, wrapper);
-        if (reportPage.getRecords().isEmpty()) {
-            return new Page<>(pageNo, pageSize, 0);
-        }
-        // 获取实验名称（实际应通过 scheduleId -> 排课表 -> 实验表）
-        // 为简化，暂返回默认值
-        List<ExperimentVO> voList = reportPage.getRecords().stream().map(r -> {
-            ExperimentVO vo = new ExperimentVO();
-            vo.setId(r.getId());
-            vo.setName("实验名称");
-            vo.setCourseName("课程");
-            vo.setSubmittedAt(r.getSubmittedAt());
-            vo.setScore(r.getScore());
-            vo.setEvaluationStatus(r.getEvaluationStatus());
-            return vo;
-        }).collect(Collectors.toList());
-
-        Page<ExperimentVO> result = new Page<>(pageNo, pageSize, reportPage.getTotal());
-        result.setRecords(voList);
-        return result;
+    public IPage<ExperimentVO> getExperiments(Long userId, Integer pageNo, Integer pageSize,
+                                              Integer status, Long courseId) {
+        Page<ExperimentVO> page = new Page<>(pageNo, pageSize);
+        return labReportMapper.selectExperimentVoPage(page, userId, status, courseId);
     }
 
     @Override

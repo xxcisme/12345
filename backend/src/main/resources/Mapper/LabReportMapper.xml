@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.uestc.group14.backend.dao.LabReportMapper">
+
+    <select id="selectExperimentVoPage" resultType="com.uestc.group14.backend.vo.ExperimentVO">
+        SELECT
+        r.id,
+        e.name AS name,
+        c.course_name AS courseName,
+        r.submitted_at AS submittedAt,
+        r.score,
+        r.evaluation_status AS evaluationStatus
+        FROM tc_lab_report r
+        LEFT JOIN tc_plan_detail pd ON pd.id = r.schedule_id
+        LEFT JOIN tc_experiment e ON e.id = pd.experiment_id
+        LEFT JOIN tc_course c ON c.id = pd.course_id
+        WHERE r.student_id = #{studentId}
+        <if test="status != null">
+            AND r.evaluation_status = #{status}
+        </if>
+        <if test="courseId != null">
+            AND pd.course_id = #{courseId}
+        </if>
+        ORDER BY r.create_time DESC
+    </select>
+    <!-- 追加到 LabReportMapper.xml -->
+    <select id="selectCourseVoPage" resultType="com.uestc.group14.backend.vo.CourseVO">
+        SELECT DISTINCT
+        c.id,
+        c.course_name AS courseName,
+        t.name AS teacherName,
+        <!-- 假设 student_course 表原有一个 status 字段，但这里我们没有，可以取报告状态或默认值 -->
+        CASE WHEN COUNT(r.id) > 0 THEN 1 ELSE 0 END AS status
+        FROM tc_lab_report r
+        INNER JOIN tc_plan_detail pd ON pd.id = r.schedule_id
+        INNER JOIN tc_course c ON c.id = pd.course_id
+        LEFT JOIN tc_teacher t ON t.id = c.teacher_id
+        WHERE r.student_id = #{studentId}
+        <if test="status != null">
+            AND r.evaluation_status = #{status}   <!-- 如果用报告状态筛选，可调整 -->
+        </if>
+        GROUP BY c.id, c.course_name, t.name
+    </select>
+</mapper>

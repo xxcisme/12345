@@ -20,8 +20,8 @@ INSERT IGNORE INTO `sm_user` (`id`, `username`, `password_hash`, `role`, `phone`
 (10, 'social01', SHA2('password', 256), 3, '13800004001', 'social@demo.com', 1, NOW(), '192.168.1.204', 0);
 
 INSERT IGNORE INTO `res_resource` (`id`, `number`, `name`, `type`, `thumbnail`, `school`, `leader`, `category`, `status`, `audit_remark`, `is_shared`, `profile`, `del_flag`) VALUES
-(1, 'RES-001', 'Unity3D入门教程', 1, '/thumb/unity.jpg', 'SC001', '张教授', '计算机', 1, NULL, 1, '适合初学者的Unity基础视频教程', 0),
-(2, 'RES-002', '虚拟仿真实验指导手册', 3, '/thumb/manual.jpg', 'SC001', '李老师', '自动化', 1, NULL, 1, '虚拟仿真实验操作手册（PDF）', 0),
+(1, 'RES-001', 'Unity3D入门教程', 1, '/thumb/unity.jpg', 'SC001', '张教授', '计算机', 2, NULL, 1, '适合初学者的Unity基础视频教程', 0),
+(2, 'RES-002', '虚拟仿真实验指导手册', 3, '/thumb/manual.jpg', 'SC001', '李老师', '自动化', 2, NULL, 1, '虚拟仿真实验操作手册（PDF）', 0),
 (3, 'RES-003', '3D建模基础音频讲解', 2, '/thumb/audio.jpg', 'SC002', '王老师', '设计', 1, NULL, 1, '音频讲解建模基础', 0),
 (4, 'RES-004', 'VR项目开发案例', 1, '/thumb/vr.jpg', 'SC001', '赵老师', '计算机', 1, NULL, 1, 'VR项目开发完整案例视频', 0),
 (5, 'RES-005', 'Python数据分析教程', 1, '/thumb/python.jpg', 'SC001', '张教授', '计算机', 0, '待审核', 0, 'Python数据处理基础', 0);

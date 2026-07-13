@@ -6,23 +6,25 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-@TableName("tc_teacher")
-public class TeacherEntity {
+@TableName("res_device")
+public class Device {
 
     @TableId(type = IdType.AUTO)
     private Long id;
 
-    private String teacherId;
+    private String number;
     private String name;
-    private String type;       // 0实训老师，1非实训老师
-    private String phone;
-    private String email;
-    private String company;
-    private Integer onJob;     // 0离职 1在职
+    private String type;
+    private String versionNumber;
+    private Long laboratoryId;
+    private Integer status;
 
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
 
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateTime;
+
+    @TableLogic
+    private Integer delFlag;
 }
