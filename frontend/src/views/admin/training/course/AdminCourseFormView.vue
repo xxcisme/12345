@@ -13,6 +13,12 @@ const { form, formRef, submitting, setFormData, submit } = useForm(addAdminCours
   router.push('/admin/training/courses')
 })
 
+const rules = {
+  courseName: [{ required: true, message: '请输入课程名称', trigger: 'blur' }],
+  courseCode: [{ required: true, message: '请输入课程编号', trigger: 'blur' }],
+  teacherId: [{ required: true, message: '请输入教师ID', trigger: 'blur' }]
+}
+
 const { loadDetail } = useDetail(getMyCourseDetail, '加载课程详情失败', { autoLoad: false })
 
 if (isEdit.value) {
@@ -29,17 +35,17 @@ if (isEdit.value) {
     </div>
 
     <div class="form-card">
-      <el-form ref="formRef" :model="form" label-width="100px" style="max-width: 640px">
-        <el-form-item label="课程名称" required>
+      <el-form ref="formRef" :model="form" :rules="rules" label-width="100px" style="max-width: 640px">
+        <el-form-item label="课程名称" prop="courseName">
           <el-input v-model="form.courseName" placeholder="请输入课程名称" />
         </el-form-item>
-        <el-form-item label="课程编号" required>
+        <el-form-item label="课程编号" prop="courseCode">
           <el-input v-model="form.courseCode" placeholder="请输入课程编号" />
         </el-form-item>
         <el-form-item label="课程类型">
           <el-input v-model="form.courseType" placeholder="请输入课程类型" />
         </el-form-item>
-        <el-form-item label="教师ID" required>
+        <el-form-item label="教师ID" prop="teacherId">
           <el-input-number v-model="form.teacherId" :min="1" placeholder="请输入教师ID" style="width: 100%" />
         </el-form-item>
         <el-form-item label="课程简介">

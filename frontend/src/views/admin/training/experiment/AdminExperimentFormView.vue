@@ -13,6 +13,12 @@ const { form, formRef, submitting, setFormData, submit } = useForm(addAdminExper
   router.push('/admin/training/experiments')
 })
 
+const rules = {
+  name: [{ required: true, message: '请输入实验名称', trigger: 'blur' }],
+  number: [{ required: true, message: '请输入实验编号', trigger: 'blur' }],
+  courseId: [{ required: true, message: '请输入所属课程ID', trigger: 'blur' }]
+}
+
 const { loadDetail } = useDetail(getMyExperimentDetail, '加载实验详情失败', { autoLoad: false })
 
 if (isEdit.value) {
@@ -29,14 +35,14 @@ if (isEdit.value) {
     </div>
 
     <div class="form-card">
-      <el-form ref="formRef" :model="form" label-width="100px" style="max-width: 640px">
-        <el-form-item label="实验名称" required>
+      <el-form ref="formRef" :model="form" :rules="rules" label-width="100px" style="max-width: 640px">
+        <el-form-item label="实验名称" prop="name">
           <el-input v-model="form.name" placeholder="请输入实验名称" />
         </el-form-item>
-        <el-form-item label="实验编号" required>
+        <el-form-item label="实验编号" prop="number">
           <el-input v-model="form.number" placeholder="请输入实验编号" />
         </el-form-item>
-        <el-form-item label="所属课程ID" required>
+        <el-form-item label="所属课程ID" prop="courseId">
           <el-input-number v-model="form.courseId" :min="1" placeholder="请输入课程ID" style="width: 100%" />
         </el-form-item>
         <el-form-item>

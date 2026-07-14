@@ -21,6 +21,11 @@ Object.assign(form, {
   content: ''
 })
 
+const rules = {
+  title: [{ required: true, message: '请输入公告标题', trigger: 'blur' }],
+  content: [{ required: true, message: '请输入公告内容', trigger: 'blur' }]
+}
+
 const { loadDetail } = useDetail(getNoticeDetail, '加载公告详情失败', { autoLoad: false })
 
 if (isEdit.value) {
@@ -37,11 +42,11 @@ if (isEdit.value) {
     </div>
 
     <div class="form-card">
-      <el-form ref="formRef" :model="form" label-width="100px" style="max-width: 640px">
-        <el-form-item label="标题" required>
+      <el-form ref="formRef" :model="form" :rules="rules" label-width="100px" style="max-width: 640px">
+        <el-form-item label="标题" prop="title">
           <el-input v-model="form.title" placeholder="请输入公告标题" />
         </el-form-item>
-        <el-form-item label="内容" required>
+        <el-form-item label="内容" prop="content">
           <el-input v-model="form.content" type="textarea" :rows="6" placeholder="请输入公告内容" />
         </el-form-item>
         <el-form-item>

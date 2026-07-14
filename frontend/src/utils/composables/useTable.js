@@ -38,12 +38,6 @@ export function useTable(fetchFn, defaultParams = {}) {
         loadData()
     }
 
-    const resetParams = () => {
-        state.params = { ...defaultParams }
-        state.pageNo = 1
-        loadData()
-    }
-
     // 初次加载
     loadData()
 
@@ -51,7 +45,6 @@ export function useTable(fetchFn, defaultParams = {}) {
         ...toRefs(state),
         loadData,
         handleSizeChange,
-        handleCurrentChange,
-        resetParams
+        handleCurrentChange
     }
 }

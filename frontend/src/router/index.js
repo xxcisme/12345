@@ -158,7 +158,7 @@ const routes = [
   // 后台管理
   {
     path: '/admin',
-    redirect: '/admin/bulletin/news'
+    redirect: '/'
   },
 
   // 新闻管理
@@ -380,7 +380,7 @@ const routes = [
     name: '编辑教学计划',
     component: () => import('@/views/admin/training/teaching-plan/AdminTeachingPlanFormView.vue'),
     meta: { requiresAuth: true, roles: ['teacher'] }
-  }
+  },
 
   // // 错误页面 暂不实现，留作备用
   // // 404
@@ -389,7 +389,14 @@ const routes = [
   //   name: 'NotFound',
   //   component: () => import('@/views/error/NotFoundView.vue'),
   //   meta: { requiresAuth: false }
-  // }
+  // },
+
+  // 兜底
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'Unknown',
+    redirect: '/'
+  }
 ]
 
 const router = createRouter({

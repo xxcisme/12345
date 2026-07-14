@@ -14,21 +14,11 @@ export function downloadBlob(blob, filename) {
     URL.revokeObjectURL(url)
 }
 
-export function downloadByUrl(url, filename) {
-    const link = document.createElement('a')
-    link.href = url
-    link.download = filename || ''
-    link.target = '_blank'
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-}
-
-export async function downloadExcel(exportApi, params, filename) {
+export async function downloadCsv(exportApi, params, filename) {
     const res = await exportApi(params)
 
     const disposition = res.headers?.['content-disposition']
-    let downloadName = filename || `export_${Date.now()}.xls`
+    let downloadName = filename || `export_${Date.now()}.csv`
 
     if (disposition) {
         const match = disposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/)
@@ -38,17 +28,47 @@ export async function downloadExcel(exportApi, params, filename) {
     }
 
     const blob = new Blob([res.data], {
-        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        type: 'text/csv;charset=utf-8'
     })
     downloadBlob(blob, downloadName)
 }
 
-export function downloadExcelFromBlob(blob, filename) {
-    const name = filename || `export_${Date.now()}.xls`
-    downloadBlob(
-        new Blob([blob], {
-            type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        }),
-        name
-    )
-}
+// 导出Excel文件
+// export function downloadByUrl(url, filename) {
+//     const link = document.createElement('a')
+//     link.href = url
+//     link.download = filename || ''
+//     link.target = '_blank'
+//     document.body.appendChild(link)
+//     link.click()
+//     document.body.removeChild(link)
+// }
+
+// export async function downloadExcel(exportApi, params, filename) {
+//     const res = await exportApi(params)
+
+//     const disposition = res.headers?.['content-disposition']
+//     let downloadName = filename || `export_${Date.now()}.xls`
+
+//     if (disposition) {
+//         const match = disposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/)
+//         if (match && match[1]) {
+//             downloadName = decodeURIComponent(match[1].replace(/['"]/g, ''))
+//         }
+//     }
+
+//     const blob = new Blob([res.data], {
+//         type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+//     })
+//     downloadBlob(blob, downloadName)
+// }
+
+// export function downloadExcelFromBlob(blob, filename) {
+//     const name = filename || `export_${Date.now()}.xls`
+//     downloadBlob(
+//         new Blob([blob], {
+//             type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+//         }),
+//         name
+//     )
+// }

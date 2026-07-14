@@ -77,6 +77,11 @@ const handleSubmit = async () => {
   }
 }
 
+const rules = {
+  name: [{ required: true, message: '请输入资源名称', trigger: 'blur' }],
+  type: [{ required: true, message: '请选择资源类型', trigger: 'change' }]
+}
+
 const { loadDetail } = useDetail(getResourceDetail, '加载资源详情失败', { autoLoad: false })
 
 if (isEdit.value) {
@@ -96,11 +101,11 @@ if (isEdit.value) {
     </div>
 
     <div class="form-card">
-      <el-form ref="formRef" :model="form" label-width="100px" style="max-width: 640px">
-        <el-form-item label="资源名称" required>
+      <el-form ref="formRef" :model="form" :rules="rules" label-width="100px" style="max-width: 640px">
+        <el-form-item label="资源名称" prop="name">
           <el-input v-model="form.name" placeholder="请输入资源名称" />
         </el-form-item>
-        <el-form-item label="资源类型" required>
+        <el-form-item label="资源类型" prop="type">
           <el-select v-model="form.type" placeholder="请选择资源类型" style="width: 100%">
             <el-option label="视频" :value="1" />
             <el-option label="音频" :value="2" />

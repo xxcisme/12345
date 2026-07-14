@@ -12,6 +12,13 @@ const { form, formRef, submitting, setFormData, submit } = useForm(addAdminUser,
   router.push('/admin/system/users')
 })
 
+const rules = {
+  username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
+  password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
+  phone: [{ required: true, message: '请输入手机号', trigger: 'blur' }],
+  role: [{ required: true, message: '请选择角色', trigger: 'change' }]
+}
+
 const { loadDetail } = useDetail(getAdminUserDetail, '加载用户详情失败', { autoLoad: false })
 
 if (isEdit.value) {
@@ -28,23 +35,23 @@ if (isEdit.value) {
     </div>
 
     <div class="form-card">
-      <el-form ref="formRef" :model="form" label-width="100px" style="max-width: 560px">
-        <el-form-item label="用户名" required>
+      <el-form ref="formRef" :model="form" :rules="rules" label-width="100px" style="max-width: 560px">
+        <el-form-item label="用户名" prop="username">
           <el-input v-model="form.username" placeholder="请输入用户名" :disabled="isEdit" />
         </el-form-item>
-        <el-form-item v-if="!isEdit" label="密码" required>
+        <el-form-item v-if="!isEdit" label="密码" prop="password">
           <el-input v-model="form.password" type="password" placeholder="请输入密码" show-password />
         </el-form-item>
         <el-form-item label="真实姓名">
           <el-input v-model="form.realName" placeholder="请输入真实姓名" />
         </el-form-item>
-        <el-form-item label="手机号" required>
+        <el-form-item label="手机号" prop="phone">
           <el-input v-model="form.phone" placeholder="请输入手机号" />
         </el-form-item>
         <el-form-item label="邮箱">
           <el-input v-model="form.email" placeholder="请输入邮箱" />
         </el-form-item>
-        <el-form-item label="角色" required>
+        <el-form-item label="角色" prop="role">
           <el-select v-model="form.role" placeholder="请选择角色" style="width: 100%">
             <el-option label="学生" :value="1" />
             <el-option label="老师" :value="2" />

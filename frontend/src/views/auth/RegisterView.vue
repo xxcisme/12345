@@ -16,6 +16,15 @@ const form = ref({
   occupationType: ''
 })
 const loading = ref(false)
+const formRef = ref(null)
+
+const rules = {
+  username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
+  password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
+  confirmPassword: [{ required: true, message: '请确认密码', trigger: 'blur' }],
+  phone: [{ required: true, message: '请输入手机号', trigger: 'blur' }],
+  occupationType: [{ required: true, message: '请选择职业类型', trigger: 'change' }]
+}
 
 const occupationOptions = [
   { label: '学生', value: 'student' },
@@ -24,6 +33,12 @@ const occupationOptions = [
 ]
 
 const handleRegister = async () => {
+  if (!formRef.value) return
+  try {
+    await formRef.value.validate()
+  } catch {
+    return
+  }
   if (form.value.password !== form.value.confirmPassword) {
     ElMessage.error('两次密码输入不一致')
     return
@@ -43,20 +58,20 @@ const handleRegister = async () => {
   <div class="auth-container">
     <div class="auth-card">
       <h2 class="auth-title">用户注册</h2>
-      <el-form ref="formRef" :model="form" label-position="top">
-        <el-form-item label="用户名" required>
+      <el-form ref="formRef" :model="form" :rules="rules" label-position="top">
+        <el-form-item label="用户名" prop="username">
           <el-input v-model="form.username" placeholder="请输入用户名" />
         </el-form-item>
-        <el-form-item label="密码" required>
+        <el-form-item label="密码" prop="password">
           <el-input v-model="form.password" type="password" placeholder="请输入密码" show-password />
         </el-form-item>
-        <el-form-item label="确认密码" required>
+        <el-form-item label="确认密码" prop="confirmPassword">
           <el-input v-model="form.confirmPassword" type="password" placeholder="请再次输入密码" show-password />
         </el-form-item>
         <el-form-item label="真实姓名">
           <el-input v-model="form.realName" placeholder="请输入真实姓名" />
         </el-form-item>
-        <el-form-item label="手机号">
+        <el-form-item label="手机号" prop="phone">
           <el-input v-model="form.phone" placeholder="请输入手机号" />
         </el-form-item>
         <el-form-item label="邮箱">
@@ -65,7 +80,7 @@ const handleRegister = async () => {
         <el-form-item label="学校/单位编号">
           <el-input v-model="form.schoolCode" placeholder="请输入学校或单位编号" />
         </el-form-item>
-        <el-form-item label="职业类型">
+        <el-form-item label="职业类型" prop="occupationType">
           <el-select v-model="form.occupationType" placeholder="请选择职业类型" style="width: 100%">
             <el-option v-for="item in occupationOptions" :key="item.value" :label="item.label" :value="item.value" />
           </el-select>

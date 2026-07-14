@@ -2,7 +2,7 @@
 import { useTable } from '@/utils/composables/useTable'
 import { getResources } from '@/api/resource'
 
-const { list, total, loading, pageNo, pageSize, params, handleSizeChange, handleCurrentChange, resetParams } = useTable(getResources, {
+const { list, total, loading, pageNo, pageSize, params, handleSizeChange, handleCurrentChange } = useTable(getResources, {
   name: '',
   type: undefined,
   category: '',
@@ -19,13 +19,13 @@ const { list, total, loading, pageNo, pageSize, params, handleSizeChange, handle
     </div>
 
     <div class="search-bar">
-      <el-input v-model="params.name" placeholder="搜索资源名称" clearable style="width: 240px" @clear="resetParams" @keyup.enter="resetParams" />
-      <el-select v-model="params.type" placeholder="资源类型" clearable style="width: 160px" @change="resetParams">
+      <el-input v-model="params.name" placeholder="搜索资源名称" clearable style="width: 240px" @keyup.enter="handleCurrentChange(1)" />
+      <el-select v-model="params.type" placeholder="资源类型" clearable style="width: 160px" @change="handleCurrentChange(1)">
         <el-option label="视频" :value="1" />
         <el-option label="音频" :value="2" />
         <el-option label="文档" :value="3" />
       </el-select>
-      <el-button type="primary" @click="resetParams">搜索</el-button>
+      <el-button type="primary" @click="handleCurrentChange(1)">搜索</el-button>
     </div>
 
     <div v-loading="loading">
