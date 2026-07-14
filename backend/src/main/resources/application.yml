@@ -11,10 +11,7 @@ spring:
     url: jdbc:mysql://localhost:3306/vtp?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=UTC
   sql:
     init:
-      mode: always
-      schema-locations: classpath:schema.sql
-      data-locations: classpath:data.sql
-      continue-on-error: false
+      mode: never
 springdoc:
   api-docs:
     path: /v3/api-docs
