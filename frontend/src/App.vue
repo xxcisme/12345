@@ -50,12 +50,12 @@ const navModules = computed(() => {
 
   if (isLoggedIn.value) {
     const trainingItems = []
-    if (isAdmin.value || isTeacher.value) {
+    if (isTeacher.value) {
       trainingItems.push({ label: '教学计划', path: '/admin/training/teaching-plans' })
     }
     trainingItems.push({ label: '课程', path: (isAdmin.value || isTeacher.value) ? '/admin/training/courses' : '/user/courses' })
     trainingItems.push({ label: '实验', path: (isAdmin.value || isTeacher.value) ? '/admin/training/experiments' : '/user/experiments' })
-    if (isAdmin.value || isTeacher.value) {
+    if (isTeacher.value) {
       trainingItems.push({ label: '成绩评定', path: '/admin/training/grades' })
     }
     if (isAdmin.value) {
@@ -66,16 +66,21 @@ const navModules = computed(() => {
       items: trainingItems
     })
 
-    modules.push({
-      label: '个人中心',
-      items: [
-        { label: '个人信息', path: '/user/profile' },
-        { label: '通知', path: '/user/messages' },
+    const personalItems = [
+      { label: '个人信息', path: '/user/profile' },
+      { label: '通知', path: '/user/messages' }
+    ]
+    if (!isAdmin.value) {
+      personalItems.push(
         { label: '收藏', path: '/user/favorites' },
         { label: '我的申请', path: '/user/lab-applications' },
         { label: '我的课程', path: '/user/courses' },
         { label: '我的实验', path: '/user/experiments' }
-      ]
+      )
+    }
+    modules.push({
+      label: '个人中心',
+      items: personalItems
     })
   }
 

@@ -12,6 +12,12 @@ const { form, formRef, submitting, setFormData, submit } = useForm(addAdminTeach
   router.push('/admin/training/teachers')
 })
 
+const rules = {
+  name: [{ required: true, message: '请输入教师姓名', trigger: 'blur' }],
+  teacherId: [{ required: true, message: '请输入教师编号', trigger: 'blur' }],
+  phone: [{ required: true, message: '请输入手机号', trigger: 'blur' }]
+}
+
 const { loadDetail } = useDetail(getAdminTeacherDetail, '加载教师详情失败', { autoLoad: false })
 
 if (isEdit.value) {
@@ -28,11 +34,11 @@ if (isEdit.value) {
     </div>
 
     <div class="form-card">
-      <el-form ref="formRef" :model="form" label-width="100px" style="max-width: 640px">
-        <el-form-item label="姓名" required>
+      <el-form ref="formRef" :model="form" :rules="rules" label-width="100px" style="max-width: 640px">
+        <el-form-item label="姓名" prop="name">
           <el-input v-model="form.name" placeholder="请输入教师姓名" />
         </el-form-item>
-        <el-form-item label="教师编号" required>
+        <el-form-item label="教师编号" prop="teacherId">
           <el-input v-model="form.teacherId" placeholder="请输入教师编号" />
         </el-form-item>
         <el-form-item label="师资类型">
@@ -41,7 +47,7 @@ if (isEdit.value) {
             <el-option label="非实训老师" value="1" />
           </el-select>
         </el-form-item>
-        <el-form-item label="手机号" required>
+        <el-form-item label="手机号" prop="phone">
           <el-input v-model="form.phone" placeholder="请输入手机号" />
         </el-form-item>
         <el-form-item label="邮箱">

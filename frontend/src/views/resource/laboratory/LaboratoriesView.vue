@@ -39,27 +39,22 @@ const { handleDelete } = useConfirm(deleteAdminLaboratory, loadData)
     </div>
 
     <div v-loading="loading">
-      <div v-if="list.length" class="lab-grid">
-        <div v-for="item in list" :key="item.id" class="lab-card">
-          <router-link :to="`/resources/laboratories/${item.id}`" class="card-link">
-            <div class="card-cover">
-              <el-icon :size="48"><OfficeBuilding /></el-icon>
-            </div>
-            <div class="card-info">
-              <h4>{{ item.name }}</h4>
-              <p class="card-desc">{{ item.address }}</p>
-              <div class="card-meta">
-                <span>编号：{{ item.number }}</span>
-                <span>工位：{{ item.stationNum }}</span>
-              </div>
-            </div>
-          </router-link>
-          <div v-if="isAdmin" class="card-actions">
-            <el-button type="primary" link size="small" @click="router.push(`/admin/resource/laboratory/edit/${item.id}`)">编辑</el-button>
-            <el-button type="danger" link size="small" @click="handleDelete(item.id, item.name)">删除</el-button>
-          </div>
-        </div>
-      </div>
+      <el-table v-if="list.length" :data="list" stripe style="width: 100%">
+        <el-table-column label="名称" min-width="200">
+          <template #default="{ row }">
+            <router-link :to="`/resources/laboratories/${row.id}`" class="table-link">{{ row.name }}</router-link>
+          </template>
+        </el-table-column>
+        <el-table-column prop="number" label="编号" width="120" />
+        <el-table-column prop="address" label="地址" min-width="180" show-overflow-tooltip />
+        <el-table-column prop="stationNum" label="工位数量" width="100" />
+        <el-table-column v-if="isAdmin" label="操作" width="160" fixed="right">
+          <template #default="{ row }">
+            <el-button type="primary" link size="small" @click="router.push(`/admin/resource/laboratory/edit/${row.id}`)">编辑</el-button>
+            <el-button type="danger" link size="small" @click="handleDelete(row.id, row.name)">删除</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
       <el-empty v-else description="暂无实验室" />
     </div>
 
@@ -98,67 +93,16 @@ const { handleDelete } = useConfirm(deleteAdminLaboratory, loadData)
   gap: 12px;
   margin-bottom: 24px;
 }
-.lab-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-}
-.lab-card {
-  background: #fff;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
-  transition: box-shadow 0.3s, transform 0.3s;
-}
-.lab-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-  transform: translateY(-2px);
-}
-.card-link {
-  text-decoration: none;
-  color: inherit;
-}
-.card-cover {
-  height: 140px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #f5f7fa;
+.table-link {
   color: #409eff;
+  text-decoration: none;
 }
-.card-info {
-  padding: 16px;
-}
-.card-info h4 {
-  font-size: 16px;
-  margin-bottom: 8px;
-  color: #303133;
-}
-.card-desc {
-  font-size: 13px;
-  color: #909399;
-  margin-bottom: 8px;
-}
-.card-meta {
-  display: flex;
-  justify-content: space-between;
-  font-size: 12px;
-  color: #c0c4cc;
-}
-.card-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  padding: 0 16px 12px;
+.table-link:hover {
+  color: #66b1ff;
 }
 .pagination-wrap {
   display: flex;
   justify-content: center;
   margin-top: 32px;
-}
-@media (max-width: 768px) {
-  .lab-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
 }
 </style>

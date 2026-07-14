@@ -1,8 +1,7 @@
 <script setup>
 import { useTable } from '@/utils/composables/useTable'
 import { getAdminLogs, exportAdminLogs, cleanAdminLogs } from '@/api/admin/system'
-import { downloadExcel } from '@/utils/download'
-import { ElMessage } from 'element-plus'
+import { downloadCsv } from '@/utils/download'
 
 const { list, total, loading, pageNo, pageSize, params, handleSizeChange, handleCurrentChange, loadData } = useTable(getAdminLogs, {
   username: '',
@@ -13,7 +12,7 @@ const { list, total, loading, pageNo, pageSize, params, handleSizeChange, handle
 })
 
 const handleExport = async () => {
-  await downloadExcel(exportAdminLogs, params.value, `logs_${Date.now()}.xls`)
+  await downloadCsv(exportAdminLogs, params.value, `logs_${Date.now()}.csv`)
 }
 
 const handleClean = async (daysToKeep) => {

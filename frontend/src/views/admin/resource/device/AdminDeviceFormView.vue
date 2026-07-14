@@ -13,6 +13,12 @@ const { form, formRef, submitting, setFormData, submit } = useForm(addAdminDevic
   router.push('/admin/resource/devices')
 })
 
+const rules = {
+  name: [{ required: true, message: '请输入设备名称', trigger: 'blur' }],
+  number: [{ required: true, message: '请输入设备编号', trigger: 'blur' }],
+  laboratoryId: [{ required: true, message: '请输入所属实验室ID', trigger: 'blur' }]
+}
+
 const { loadDetail } = useDetail(getDeviceDetail, '加载设备详情失败', { autoLoad: false })
 
 if (isEdit.value) {
@@ -29,11 +35,11 @@ if (isEdit.value) {
     </div>
 
     <div class="form-card">
-      <el-form ref="formRef" :model="form" label-width="100px" style="max-width: 640px">
-        <el-form-item label="设备名称" required>
+      <el-form ref="formRef" :model="form" :rules="rules" label-width="100px" style="max-width: 640px">
+        <el-form-item label="设备名称" prop="name">
           <el-input v-model="form.name" placeholder="请输入设备名称" />
         </el-form-item>
-        <el-form-item label="设备编号" required>
+        <el-form-item label="设备编号" prop="number">
           <el-input v-model="form.number" placeholder="请输入设备编号" />
         </el-form-item>
         <el-form-item label="设备类型">
@@ -42,7 +48,7 @@ if (isEdit.value) {
         <el-form-item label="版本号">
           <el-input v-model="form.versionNumber" placeholder="请输入版本号" />
         </el-form-item>
-        <el-form-item label="所属实验室" required>
+        <el-form-item label="所属实验室" prop="laboratoryId">
           <el-input v-model="form.laboratoryId" placeholder="请输入实验室ID" />
         </el-form-item>
         <el-form-item v-if="isEdit" label="设备状态">

@@ -24,6 +24,11 @@ Object.assign(form, {
   enclosure: ''
 })
 
+const rules = {
+  title: [{ required: true, message: '请输入新闻标题', trigger: 'blur' }],
+  content: [{ required: true, message: '请输入新闻内容', trigger: 'blur' }]
+}
+
 const handleUploadSuccess = (response) => {
   if (response.code === 200) {
     form.enclosure = response.data.url
@@ -53,14 +58,14 @@ if (isEdit.value) {
     </div>
 
     <div class="form-card">
-      <el-form ref="formRef" :model="form" label-width="100px" style="max-width: 640px">
-        <el-form-item label="标题" required>
+      <el-form ref="formRef" :model="form" :rules="rules" label-width="100px" style="max-width: 640px">
+        <el-form-item label="标题" prop="title">
           <el-input v-model="form.title" placeholder="请输入新闻标题" />
         </el-form-item>
         <el-form-item label="来源">
           <el-input v-model="form.origin" placeholder="请输入新闻来源" />
         </el-form-item>
-        <el-form-item label="内容" required>
+        <el-form-item label="内容" prop="content">
           <el-input v-model="form.content" type="textarea" :rows="6" placeholder="请输入新闻内容" />
         </el-form-item>
         <el-form-item label="封面图片">

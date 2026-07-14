@@ -13,6 +13,12 @@ const { form, formRef, submitting, setFormData, submit } = useForm(addAdminLabor
   router.push('/admin/resource/laboratories')
 })
 
+const rules = {
+  name: [{ required: true, message: '请输入实验室名称', trigger: 'blur' }],
+  number: [{ required: true, message: '请输入实验室编号', trigger: 'blur' }],
+  stationNum: [{ required: true, message: '请输入工位数量', trigger: 'blur' }]
+}
+
 const { loadDetail } = useDetail(getLaboratoryDetail, '加载实验室详情失败', { autoLoad: false })
 
 if (isEdit.value) {
@@ -29,17 +35,17 @@ if (isEdit.value) {
     </div>
 
     <div class="form-card">
-      <el-form ref="formRef" :model="form" label-width="100px" style="max-width: 640px">
-        <el-form-item label="实验室名称" required>
+      <el-form ref="formRef" :model="form" :rules="rules" label-width="100px" style="max-width: 640px">
+        <el-form-item label="实验室名称" prop="name">
           <el-input v-model="form.name" placeholder="请输入实验室名称" />
         </el-form-item>
-        <el-form-item label="编号" required>
+        <el-form-item label="编号" prop="number">
           <el-input v-model="form.number" placeholder="请输入实验室编号" />
         </el-form-item>
         <el-form-item label="地址">
           <el-input v-model="form.address" placeholder="请输入地址" />
         </el-form-item>
-        <el-form-item label="工位数量" required>
+        <el-form-item label="工位数量" prop="stationNum">
           <el-input-number v-model="form.stationNum" :min="1" placeholder="工位数量" style="width: 100%" />
         </el-form-item>
         <el-form-item label="面积(㎡)">

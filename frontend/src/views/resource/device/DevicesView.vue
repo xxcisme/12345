@@ -46,29 +46,28 @@ const { handleDelete } = useConfirm(deleteAdminDevice, loadData)
     </div>
 
     <div v-loading="loading">
-      <div v-if="list.length" class="device-grid">
-        <div v-for="item in list" :key="item.id" class="device-card">
-          <router-link :to="`/resources/devices/${item.id}`" class="card-link">
-            <div class="card-cover">
-              <el-icon :size="48"><Monitor /></el-icon>
-            </div>
-            <div class="card-info">
-              <h4>{{ item.name }}</h4>
-              <p class="card-desc">编号：{{ item.number }}</p>
-              <div class="card-meta">
-                <el-tag :type="item.status === 0 ? 'success' : item.status === 1 ? 'warning' : item.status === 2 ? 'info' : 'danger'" size="small">
-                  {{ item.status === 0 ? '空闲' : item.status === 1 ? '使用中' : item.status === 2 ? '保修' : '损坏' }}
-                </el-tag>
-                <span>{{ item.createTime }}</span>
-              </div>
-            </div>
-          </router-link>
-          <div v-if="isAdmin" class="card-actions">
-            <el-button type="primary" link size="small" @click="router.push(`/admin/resource/device/edit/${item.id}`)">编辑</el-button>
-            <el-button type="danger" link size="small" @click="handleDelete(item.id, item.name)">删除</el-button>
-          </div>
-        </div>
-      </div>
+      <el-table v-if="list.length" :data="list" stripe style="width: 100%">
+        <el-table-column label="名称" min-width="200">
+          <template #default="{ row }">
+            <router-link :to="`/resources/devices/${row.id}`" class="table-link">{{ row.name }}</router-link>
+          </template>
+        </el-table-column>
+        <el-table-column prop="number" label="编号" width="120" />
+        <el-table-column prop="type" label="类型" width="120" />
+        <el-table-column label="状态" width="100">
+          <template #default="{ row }">
+            <el-tag :type="row.status === 0 ? 'success' : row.status === 1 ? 'warning' : row.status === 2 ? 'info' : 'danger'" size="small">
+              {{ row.status === 0 ? '空闲' : row.status === 1 ? '使用中' : row.status === 2 ? '保修' : '损坏' }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column v-if="isAdmin" label="操作" width="160" fixed="right">
+          <template #default="{ row }">
+            <el-button type="primary" link size="small" @click="router.push(`/admin/resource/device/edit/${row.id}`)">编辑</el-button>
+            <el-button type="danger" link size="small" @click="handleDelete(row.id, row.name)">删除</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
       <el-empty v-else description="暂无设备" />
     </div>
 
@@ -108,68 +107,16 @@ const { handleDelete } = useConfirm(deleteAdminDevice, loadData)
   margin-bottom: 24px;
   flex-wrap: wrap;
 }
-.device-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
-}
-.device-card {
-  background: #fff;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
-  transition: box-shadow 0.3s, transform 0.3s;
-}
-.device-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-  transform: translateY(-2px);
-}
-.card-link {
-  text-decoration: none;
-  color: inherit;
-}
-.card-cover {
-  height: 140px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #f5f7fa;
+.table-link {
   color: #409eff;
+  text-decoration: none;
 }
-.card-info {
-  padding: 16px;
-}
-.card-info h4 {
-  font-size: 15px;
-  margin-bottom: 8px;
-  color: #303133;
-}
-.card-desc {
-  font-size: 13px;
-  color: #909399;
-  margin-bottom: 8px;
-}
-.card-meta {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 12px;
-  color: #c0c4cc;
-}
-.card-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  padding: 0 16px 12px;
+.table-link:hover {
+  color: #66b1ff;
 }
 .pagination-wrap {
   display: flex;
   justify-content: center;
   margin-top: 32px;
-}
-@media (max-width: 768px) {
-  .device-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
 }
 </style>
