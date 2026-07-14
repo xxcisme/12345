@@ -164,38 +164,38 @@ const routes = [
     path: '/admin/bulletin/news',
     name: '管理新闻',
     component: () => import('@/views/admin/bulletin/news/AdminNewsView.vue'),
-    meta: { requiresAuth: true, roles: ['admin'] }
+    meta: { requiresAuth: true, roles: ['admin'] , layout: 'admin'}
   },
   {
     path: '/admin/bulletin/news/new',
     name: '添加新闻',
     component: () => import('@/views/admin/bulletin/news/AdminNewsFormView.vue'),
-    meta: { requiresAuth: true, roles: ['admin'] }
+    meta: { requiresAuth: true, roles: ['admin'] , layout: 'admin'}
   },
   {
     path: '/admin/bulletin/news/edit/:id',
     name: '编辑新闻',
     component: () => import('@/views/admin/bulletin/news/AdminNewsFormView.vue'),
-    meta: { requiresAuth: true, roles: ['admin'] }
+    meta: { requiresAuth: true, roles: ['admin'] , layout: 'admin'}
   },
   // 公告管理
   {
     path: '/admin/bulletin/notice',
     name: '管理公告',
     component: () => import('@/views/admin/bulletin/notice/AdminNoticesView.vue'),
-    meta: { requiresAuth: true, roles: ['admin'] }
+    meta: { requiresAuth: true, roles: ['admin'] , layout: 'admin'}
   },
   {
     path: '/admin/bulletin/notice/new',
     name: '添加公告',
     component: () => import('@/views/admin/bulletin/notice/AdminNoticeFormView.vue'),
-    meta: { requiresAuth: true, roles: ['admin'] }
+    meta: { requiresAuth: true, roles: ['admin'] , layout: 'admin'}
   },
   {
     path: '/admin/bulletin/notice/edit/:id',
     name: '编辑公告',
     component: () => import('@/views/admin/bulletin/notice/AdminNoticeFormView.vue'),
-    meta: { requiresAuth: true, roles: ['admin'] }
+    meta: { requiresAuth: true, roles: ['admin'], layout: 'admin' }
   },
 
   // 媒体资源管理
@@ -203,19 +203,19 @@ const routes = [
     path: '/admin/resource/media',
     name: '管理媒体资源',
     component: () => import('@/views/admin/resource/media/AdminMediaView.vue'),
-    meta: { requiresAuth: true, roles: ['admin', 'teacher'] }
+    meta: { requiresAuth: true, roles: ['admin', 'teacher'], layout: 'admin' }
   },
   {
     path: '/admin/resource/media/new',
     name: '添加媒体资源',
     component: () => import('@/views/admin/resource/media/AdminMediumFormView.vue'),
-    meta: { requiresAuth: true, roles: ['admin', 'teacher'] }
+    meta: { requiresAuth: true, roles: ['admin', 'teacher'], layout: 'admin' }
   },
   {
     path: '/admin/resource/media/edit/:id',
     name: '编辑媒体资源信息',
     component: () => import('@/views/admin/resource/media/AdminMediumFormView.vue'),
-    meta: { requiresAuth: true, roles: ['admin', 'teacher'] }
+    meta: { requiresAuth: true, roles: ['admin', 'teacher'], layout: 'admin' }
   },
 
   // 实验室管理
@@ -223,32 +223,32 @@ const routes = [
     path: '/admin/resource/laboratory/new',
     name: '添加实验室',
     component: () => import('@/views/admin/resource/laboratory/AdminLaboratoryFormView.vue'),
-    meta: { requiresAuth: true, roles: ['admin'] }
+    meta: { requiresAuth: true, roles: ['admin'], layout: 'admin' }
   },
   {
     path: '/admin/resource/laboratory/edit/:id',
     name: '编辑实验室信息',
     component: () => import('@/views/admin/resource/laboratory/AdminLaboratoryFormView.vue'),
-    meta: { requiresAuth: true, roles: ['admin'] }
+    meta: { requiresAuth: true, roles: ['admin'] , layout: 'admin'}
   },
   {
     path: '/admin/resource/lab-applications',
     name: '管理实验室申请',
     component: () => import('@/views/admin/resource/laboratory/lab-application/AdminLabApplicationsView.vue'),
-    meta: { requiresAuth: true, roles: ['admin'] }
+    meta: { requiresAuth: true, roles: ['admin'] , layout: 'admin'}
   },
   // 设备管理
   {
     path: '/admin/resource/device/new',
     name: '添加设备',
     component: () => import('@/views/admin/resource/device/AdminDeviceFormView.vue'),
-    meta: { requiresAuth: true, roles: ['admin'] }
+    meta: { requiresAuth: true, roles: ['admin'], layout: 'admin' }
   },
   {
     path: '/admin/resource/device/edit/:id',
     name: '编辑设备信息',
     component: () => import('@/views/admin/resource/device/AdminDeviceFormView.vue'),
-    meta: { requiresAuth: true, roles: ['admin'] }
+    meta: { requiresAuth: true, roles: ['admin'] , layout: 'admin'}
   },
 
   // 系统日志
@@ -256,26 +256,26 @@ const routes = [
     path: '/admin/system/logs',
     name: '系统日志',
     component: () => import('@/views/admin/system/log/AdminLogsView.vue'),
-    meta: { requiresAuth: true, roles: ['admin'] }
+    meta: { requiresAuth: true, roles: ['admin'], layout: 'admin' }
   },
   // 用户管理
   {
     path: '/admin/system/users',
     name: '管理用户',
     component: () => import('@/views/admin/system/user/AdminUsersView.vue'),
-    meta: { requiresAuth: true, roles: ['admin'] }
+    meta: { requiresAuth: true, roles: ['admin'] , layout: 'admin'}
   },
   {
     path: '/admin/system/users/new',
     name: '添加用户',
     component: () => import('@/views/admin/system/user/AdminUserFormView.vue'),
-    meta: { requiresAuth: true, roles: ['admin'] }
+    meta: { requiresAuth: true, roles: ['admin'] , layout: 'admin'}
   },
   {
     path: '/admin/system/users/edit/:id',
     name: '编辑用户信息',
     component: () => import('@/views/admin/system/user/AdminUserFormView.vue'),
-    meta: { requiresAuth: true, roles: ['admin'] }
+    meta: { requiresAuth: true, roles: ['admin'], layout: 'admin' }
   },
 
   // 课程管理
@@ -283,89 +283,89 @@ const routes = [
     path: '/admin/training/courses',
     name: '管理课程',
     component: () => import('@/views/admin/training/course/AdminCoursesView.vue'),
-    meta: { requiresAuth: true, roles: ['admin', 'teacher'] }
+    meta: { requiresAuth: true, roles: ['admin', 'teacher'] , layout: 'admin'}
   },
   {
     path: '/admin/training/courses/new',
     name: '添加课程',
     component: () => import('@/views/admin/training/course/AdminCourseFormView.vue'),
-    meta: { requiresAuth: true, roles: ['admin', 'teacher'] }
+    meta: { requiresAuth: true, roles: ['admin', 'teacher'], layout: 'admin' }
   },
   {
     path: '/admin/training/courses/edit/:id',
     name: '编辑课程信息',
     component: () => import('@/views/admin/training/course/AdminCourseFormView.vue'),
-    meta: { requiresAuth: true, roles: ['admin', 'teacher'] }
+    meta: { requiresAuth: true, roles: ['admin', 'teacher'] , layout: 'admin'}
   },
   // 实验管理
   {
     path: '/admin/training/experiments',
     name: '管理实验',
     component: () => import('@/views/admin/training/experiment/AdminExperimentsView.vue'),
-    meta: { requiresAuth: true, roles: ['admin', 'teacher'] }
+    meta: { requiresAuth: true, roles: ['admin', 'teacher'] , layout: 'admin'}
   },
   {
     path: '/admin/training/experiments/new',
     name: '添加实验',
     component: () => import('@/views/admin/training/experiment/AdminExperimentFormView.vue'),
-    meta: { requiresAuth: true, roles: ['admin', 'teacher'] }
+    meta: { requiresAuth: true, roles: ['admin', 'teacher'] , layout: 'admin'}
   },
   {
     path: '/admin/training/experiments/edit/:id',
     name: '编辑实验信息',
     component: () => import('@/views/admin/training/experiment/AdminExperimentFormView.vue'),
-    meta: { requiresAuth: true, roles: ['admin', 'teacher'] }
+    meta: { requiresAuth: true, roles: ['admin', 'teacher'] , layout: 'admin'}
   },
   // 成绩管理
   {
     path: '/admin/training/grades',
     name: '管理成绩',
     component: () => import('@/views/admin/training/grade/AdminGradesView.vue'),
-    meta: { requiresAuth: true, roles: ['admin', 'teacher'] }
+    meta: { requiresAuth: true, roles: ['admin', 'teacher'] , layout: 'admin'}
   },
   // 教师管理
   {
     path: '/admin/training/teachers',
     name: '管理教师',
     component: () => import('@/views/admin/training/teacher/AdminTeachersView.vue'),
-    meta: { requiresAuth: true, roles: ['admin'] }
+    meta: { requiresAuth: true, roles: ['admin'] , layout: 'admin'}
   },
   {
     path: '/admin/training/teachers/new',
     name: '添加教师',
     component: () => import('@/views/admin/training/teacher/AdminTeacherFormView.vue'),
-    meta: { requiresAuth: true, roles: ['admin'] }
+    meta: { requiresAuth: true, roles: ['admin'] , layout: 'admin'}
   },
   {
     path: '/admin/training/teachers/edit/:id',
     name: '编辑教师信息',
     component: () => import('@/views/admin/training/teacher/AdminTeacherFormView.vue'),
-    meta: { requiresAuth: true, roles: ['admin'] }
+    meta: { requiresAuth: true, roles: ['admin'] , layout: 'admin'}
   },
   {
     path: '/admin/training/teachers/:id',
     name: '教师详情',
     component: () => import('@/views/admin/training/teacher/AdminTeacherDetailView.vue'),
-    meta: { requiresAuth: true, roles: ['admin'] }
+    meta: { requiresAuth: true, roles: ['admin'] , layout: 'admin'}
   },
   // 教学计划管理
   {
     path: '/admin/training/teaching-plans',
     name: '管理教学计划',
     component: () => import('@/views/admin/training/teaching-plan/AdminTeachingPlansView.vue'),
-    meta: { requiresAuth: true, roles: ['admin', 'teacher'] }
+    meta: { requiresAuth: true, roles: ['admin', 'teacher'] , layout: 'admin'}
   },
   {
     path: '/admin/training/teaching-plans/new',
     name: '添加教学计划',
     component: () => import('@/views/admin/training/teaching-plan/AdminTeachingPlanFormView.vue'),
-    meta: { requiresAuth: true, roles: ['admin', 'teacher'] }
+    meta: { requiresAuth: true, roles: ['admin', 'teacher'] , layout: 'admin'}
   },
   {
     path: '/admin/training/teaching-plans/edit/:id',
     name: '编辑教学计划',
     component: () => import('@/views/admin/training/teaching-plan/AdminTeachingPlanFormView.vue'),
-    meta: { requiresAuth: true, roles: ['admin', 'teacher'] }
+    meta: { requiresAuth: true, roles: ['admin', 'teacher'] , layout: 'admin'}
   }
 
   // // 错误页面 暂不实现，留作备用

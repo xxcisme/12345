@@ -1,0 +1,32 @@
+@import './variables.scss';
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, #app {
+  height: 100%;
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  background-color: $bg-color;
+  color: $text-color;
+}
+
+// 工具类
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.text-ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// 覆盖 Element Plus 表格行高（可选）
+.el-table {
+  font-size: 14px;
+}
