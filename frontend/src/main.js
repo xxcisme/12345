@@ -1,4 +1,3 @@
-import './assets/main.css'
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 
 import { createApp } from 'vue'
@@ -12,7 +11,6 @@ const app = createApp(App)
 app.use(router)
 app.use(ElementPlus)
 
-//全局引入图标 注册为组件
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
     app.component(key, component)
 }

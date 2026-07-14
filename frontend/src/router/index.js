@@ -1,4 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { ROLE_MAP } from '@/utils/constants'
+import { getToken, getUser } from '@/utils/local_storage'
 
 const routes = [
   // 认证
@@ -220,6 +222,12 @@ const routes = [
 
   // 实验室管理
   {
+    path: '/admin/resource/laboratories',
+    name: '管理实验室',
+    component: () => import('@/views/resource/laboratory/LaboratoriesView.vue'),
+    meta: { requiresAuth: true, roles: ['admin'] }
+  },
+  {
     path: '/admin/resource/laboratory/new',
     name: '添加实验室',
     component: () => import('@/views/admin/resource/laboratory/AdminLaboratoryFormView.vue'),
@@ -238,6 +246,12 @@ const routes = [
     meta: { requiresAuth: true, roles: ['admin'] }
   },
   // 设备管理
+  {
+    path: '/admin/resource/devices',
+    name: '管理设备',
+    component: () => import('@/views/resource/device/DevicesView.vue'),
+    meta: { requiresAuth: true, roles: ['admin'] }
+  },
   {
     path: '/admin/resource/device/new',
     name: '添加设备',
@@ -385,19 +399,18 @@ const router = createRouter({
 
 // 路由守卫：检查登录状态与角色权限
 router.beforeEach((to, from, next) => {
-  const token = localStorage.getItem('token')
-  const user = JSON.parse(localStorage.getItem('user') || 'null')
+  const token = getToken()
+  const user = getUser()
 
   if (to.meta.requiresAuth && !token) {
-    next({ name: 'Login', query: { redirect: to.fullPath } })
+    next({ name: '登录', query: { redirect: to.fullPath } })
     return
   }
 
   if (to.meta.roles && user) {
-    const roleMap = { 1: 'student', 2: 'teacher', 3: 'social', 4: 'admin' }
-    const userRole = roleMap[user.role] || ''
+    const userRole = ROLE_MAP[user.role] || ''
     if (!to.meta.roles.includes(userRole)) {
-      next({ name: 'Home' })
+      next({ name: '首页' })
       return
     }
   }
