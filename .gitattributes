@@ -29,6 +29,15 @@
 *.cmd text eol=crlf
 
 ### binary ###
+*.mp3 binary
+*.wav binary
+*.flac binary
+*.aac binary
+*.mp4 binary
+*.avi binary
+*.mov binary
+*.mkv binary
+*.webm binary
 *.png binary
 *.jpg binary
 *.jpeg binary
