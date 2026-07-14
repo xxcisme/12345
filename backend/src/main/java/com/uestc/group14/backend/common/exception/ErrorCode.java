@@ -93,6 +93,7 @@ public enum ErrorCode {
 
     // 新闻公告 7000-7099
     NEWS_NOT_FOUND(7000, "新闻不存在"),
+    NOTICE_NOT_FOUND(7001, "公告不存在"),
     NEWS_TYPE_ERROR(7001, "新闻类型错误"),
 
     // 系统管理 8000-8099
