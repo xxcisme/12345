@@ -1,7 +1,8 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { addAdminDevice, updateAdminDevice, getDeviceDetail } from '@/api/admin/resource'
+import { addAdminDevice, updateAdminDevice } from '@/api/admin/resource'
+import { getDeviceDetail } from '@/api/resource'
 import { useForm } from '@/utils/composables/useForm'
 
 const route = useRoute()

@@ -16,11 +16,11 @@ const { form, formRef, submitting, setFormData, submit } = useForm(
   () => router.push('/admin/bulletin/notice')
 )
 
-form.value = {
+Object.assign(form, {
   id: undefined,
   title: '',
   content: ''
-}
+})
 
 onMounted(async () => {
   if (isEdit.value) {

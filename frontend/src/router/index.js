@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { ROLE_MAP } from '@/utils/constants'
 
 const routes = [
   // 认证
@@ -406,8 +407,7 @@ router.beforeEach((to, from, next) => {
   }
 
   if (to.meta.roles && user) {
-    const roleMap = { 1: 'student', 2: 'teacher', 3: 'social', 4: 'admin' }
-    const userRole = roleMap[user.role] || ''
+    const userRole = ROLE_MAP[user.role] || ''
     if (!to.meta.roles.includes(userRole)) {
       next({ name: '首页' })
       return

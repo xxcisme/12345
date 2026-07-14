@@ -1,7 +1,8 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { addAdminLaboratory, updateAdminLaboratory, getLaboratoryDetail } from '@/api/admin/resource'
+import { addAdminLaboratory, updateAdminLaboratory } from '@/api/admin/resource'
+import { getLaboratoryDetail } from '@/api/resource'
 import { useForm } from '@/utils/composables/useForm'
 
 const route = useRoute()

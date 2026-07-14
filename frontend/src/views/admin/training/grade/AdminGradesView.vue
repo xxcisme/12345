@@ -14,7 +14,8 @@ const { list, total, loading, pageNo, pageSize, params, handleSizeChange, handle
 const stats = ref(null)
 
 const loadStats = async () => {
-  stats.value = await getAdminGradeStatistics({ courseId: params.courseId, classId: params.classId })
+  const res = await getAdminGradeStatistics({ courseId: params.courseId, classId: params.classId })
+  stats.value = res.data
 }
 
 const handleAddGrade = async (data) => {

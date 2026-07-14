@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { addAdminTeacher, updateAdminTeacher, getAdminTeachers } from '@/api/admin/training'
+import { addAdminTeacher, updateAdminTeacher, getAdminTeacherDetail } from '@/api/admin/training'
 import { useForm } from '@/utils/composables/useForm'
 
 const route = useRoute()
@@ -14,9 +14,8 @@ const { form, formRef, submitting, setFormData, submit } = useForm(addAdminTeach
 
 onMounted(async () => {
   if (isEdit.value) {
-    const res = await getAdminTeachers({ pageNo: 1, pageSize: 1000 })
-    const item = res.data.records.find(item => item.id === Number(route.params.id))
-    if (item) setFormData(item)
+    const res = await getAdminTeacherDetail(route.params.id)
+    setFormData(res.data)
   }
 })
 </script>

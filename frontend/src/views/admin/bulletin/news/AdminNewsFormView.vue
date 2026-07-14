@@ -18,18 +18,18 @@ const { form, formRef, submitting, setFormData, submit } = useForm(
 )
 
 // 初始化表单结构
-form.value = {
+Object.assign(form, {
   id: undefined,
   title: '',
   origin: '',
   content: '',
   enclosure: '' // 图片地址
-}
+})
 
 // 图片上传回调
 const handleUploadSuccess = (response) => {
   if (response.code === 200) {
-    form.value.enclosure = response.data.url
+    form.enclosure = response.data.url
     ElMessage.success('图片上传成功')
   } else {
     ElMessage.error(response.msg || '图片上传失败')
@@ -38,7 +38,7 @@ const handleUploadSuccess = (response) => {
 
 // 图片移除回调
 const handleRemove = () => {
-  form.value.enclosure = ''
+  form.enclosure = ''
 }
 
 onMounted(async () => {

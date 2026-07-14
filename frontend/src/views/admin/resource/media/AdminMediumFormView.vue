@@ -2,7 +2,8 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { addAdminResource, updateAdminResource, getAdminResources } from '@/api/admin/resource'
+import { addAdminResource, updateAdminResource } from '@/api/admin/resource'
+import { getResourceDetail } from '@/api/resource'
 import { buildFormData } from '@/utils/upload'
 import { useForm } from '@/utils/composables/useForm'
 
@@ -30,7 +31,7 @@ const { form, formRef, submitting, setFormData, submit } = useForm(
   () => router.push('/admin/resource/media')
 )
 
-form.value = { ...defaultForm }
+Object.assign(form, defaultForm)
 
 const fileAccept = computed(() => {
   const map = {
@@ -38,7 +39,7 @@ const fileAccept = computed(() => {
     2: 'audio/*',
     3: '.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt'
   }
-  return map[form.value.type] || '*'
+  return map[form.type] || '*'
 })
 
 const handleFileChange = (uploadFile) => {
@@ -63,10 +64,10 @@ const handleSubmit = async () => {
   submitting.value = true
   try {
     if (isEdit.value) {
-      await updateAdminResource(form.value)
+      await updateAdminResource(form)
       ElMessage.success('修改成功')
     } else {
-      const payload = { ...form.value, file: file.value }
+      const payload = { ...form, file: file.value }
       await addAdminResource(buildFormData(payload))
       ElMessage.success('新增成功')
     }
@@ -78,14 +79,9 @@ const handleSubmit = async () => {
 
 onMounted(async () => {
   if (isEdit.value) {
-    const res = await getAdminResources({ pageNo: 1, pageSize: 1000 })
-    const item = res.data.records.find(item => item.id === Number(route.params.id))
-    if (item) {
-      const { id, name, type, category, school, leader, isShared, profile } = item
-      setFormData({ id, name, type, category, school, leader, isShared, profile })
-    } else {
-      ElMessage.error('未找到该资源')
-    }
+    const res = await getResourceDetail(route.params.id)
+    const { id, name, type, category, school, leader, isShared, profile } = res.data
+    setFormData({ id, name, type, category, school, leader, isShared, profile })
   }
 })
 </script>

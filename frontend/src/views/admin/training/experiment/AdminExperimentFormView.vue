@@ -1,7 +1,8 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { addAdminExperiment, updateAdminExperiment, getAdminExperiments } from '@/api/admin/training'
+import { addAdminExperiment, updateAdminExperiment } from '@/api/admin/training'
+import { getMyExperimentDetail } from '@/api/user'
 import { useForm } from '@/utils/composables/useForm'
 
 const route = useRoute()
@@ -14,9 +15,8 @@ const { form, formRef, submitting, setFormData, submit } = useForm(addAdminExper
 
 onMounted(async () => {
   if (isEdit.value) {
-    const res = await getAdminExperiments({ pageNo: 1, pageSize: 1000 })
-    const item = res.data.records.find(item => item.id === Number(route.params.id))
-    if (item) setFormData(item)
+    const res = await getMyExperimentDetail(route.params.id)
+    setFormData(res.data)
   }
 })
 </script>

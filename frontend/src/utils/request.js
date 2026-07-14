@@ -30,15 +30,20 @@ service.interceptors.request.use(
 // 响应拦截器
 service.interceptors.response.use(
     response => {
+        // 文件流（blob）直接返回完整响应对象
+        if (response.config.responseType === 'blob') {
+            return response
+        }
+
         const res = response.data
+        const code = Number(res.code)
         // 成功
-        if (res.code === 200 || res.code === '200') {
+        if (code === 200) {
             return res
         }
         // 业务错误统一提示
         ElMessage.error(res.msg || '请求失败')
 
-        const code = Number(res.code)
         switch (code) {
             case 401:
                 clearAuth()
