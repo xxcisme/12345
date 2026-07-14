@@ -37,7 +37,12 @@ public class SecurityConfig {
                                 "/swagger-resources/**",
                                 "/webjars/**",
                                 "/doc.html",
-                                "/favicon.ico"
+                                "/favicon.ico",
+                                "/files/**",          // 你的资源目录
+                                "/images/**",
+                                "/reports/**",
+                                "/**/*.jpg",
+                                "/static/**"          // Spring Boot 默认的静态资源路径（可选）
                         ).permitAll()
 
                         // 静态资源放行
