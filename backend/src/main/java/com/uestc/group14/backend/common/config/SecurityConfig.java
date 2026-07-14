@@ -27,12 +27,16 @@ public class SecurityConfig {
                         // 白名单路径 - 使用 antMatchers 风格
                         .requestMatchers(
                                 "/api/v1/auth/**",
+                                "/api/v1/resources",        // 资源列表（前台）
+                                "/api/v1/resources/**",     // 资源详情及子路径（评分除外，评分需要认证）
+                                "/api/v1/news/**",
+                                "/api/v1/notices/**",
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
                                 "/swagger-resources/**",
                                 "/webjars/**",
-                                "/doc.html",           // Knife4j 路径
+                                "/doc.html",
                                 "/favicon.ico"
                         ).permitAll()
 

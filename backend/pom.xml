@@ -61,6 +61,11 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- Spring AOP 支持（用于操作日志自动记录） -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
         <!--Java对象和JSON格式的转换-->
         <dependency>
             <groupId>com.alibaba</groupId>
