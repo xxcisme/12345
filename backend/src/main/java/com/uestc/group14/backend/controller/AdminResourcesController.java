@@ -45,7 +45,7 @@ public class AdminResourcesController {
     @PostMapping
     @Operation(summary = "新增资源（后台）")
     public CommonResult<Long> create(@Valid @RequestPart("resource") ResourceCreateDTO createDTO,
-                                     @RequestPart(value = "file", required = false) MultipartFile file,
+                                     @RequestPart(value = "file", required = true) MultipartFile file,
                                      HttpServletRequest request) {
         Long userId = getCurrentUserId(request);
         Long id = resourceService.createResource(createDTO, file, userId);
