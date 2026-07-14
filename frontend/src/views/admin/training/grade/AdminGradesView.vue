@@ -1,6 +1,7 @@
 <script setup>
+import { ref } from 'vue'
 import { useTable } from '@/utils/composables/useTable'
-import { getAdminGrades } from '@/api/admin/training'
+import { getAdminGrades, getAdminGradeStatistics } from '@/api/admin/training'
 
 const { list, total, loading, pageNo, pageSize, params, handleSizeChange, handleCurrentChange } = useTable(getAdminGrades, {
   courseId: undefined,
@@ -8,17 +9,42 @@ const { list, total, loading, pageNo, pageSize, params, handleSizeChange, handle
   status: 0,
   studentName: ''
 })
+
+const statistics = ref(null)
+const statisticsLoading = ref(false)
+
+const handleStatistics = async () => {
+  statisticsLoading.value = true
+  try {
+    const res = await getAdminGradeStatistics(params)
+    statistics.value = res.data
+  } finally {
+    statisticsLoading.value = false
+  }
+}
 </script>
 
 <template>
   <div class="page-container">
     <div class="page-header">
       <h2>成绩管理</h2>
+      <el-button type="primary" :loading="statisticsLoading" @click="handleStatistics">统计</el-button>
     </div>
 
     <div class="search-bar">
       <el-input v-model="params.studentName" placeholder="搜索学生姓名" clearable style="width: 200px" @keyup.enter="handleCurrentChange(1)" />
       <el-button type="primary" @click="handleCurrentChange(1)">搜索</el-button>
+    </div>
+
+    <div v-if="statistics" class="statistics-section">
+      <el-table :data="[statistics]" stripe>
+        <el-table-column prop="avgScore" label="平均分" width="120" />
+        <el-table-column prop="maxScore" label="最高分" width="120" />
+        <el-table-column prop="minScore" label="最低分" width="120" />
+        <el-table-column prop="passRate" label="通过率(%)" width="120" />
+        <el-table-column prop="totalCount" label="总人数" width="120" />
+        <el-table-column prop="passCount" label="通过人数" width="120" />
+      </el-table>
     </div>
 
     <div v-loading="loading">
@@ -56,6 +82,9 @@ const { list, total, loading, pageNo, pageSize, params, handleSizeChange, handle
   padding: 20px;
 }
 .page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 20px;
 }
 .page-header h2 {
@@ -65,6 +94,9 @@ const { list, total, loading, pageNo, pageSize, params, handleSizeChange, handle
 .search-bar {
   display: flex;
   gap: 12px;
+  margin-bottom: 20px;
+}
+.statistics-section {
   margin-bottom: 20px;
 }
 .pagination-wrap {
