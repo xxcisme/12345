@@ -1,20 +1,37 @@
 <script setup>
+import { computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { useTable } from '@/utils/composables/useTable'
 import { getDevices } from '@/api/resource'
+import { deleteAdminDevice } from '@/api/admin/resource'
+import { useConfirm } from '@/utils/composables/useConfirm'
+import { getUser } from '@/utils/local_storage'
+import { ROLE_MAP } from '@/utils/constants'
 
-const { list, total, loading, pageNo, pageSize, params, handleSizeChange, handleCurrentChange } = useTable(getDevices, {
+const router = useRouter()
+const isAdmin = computed(() => {
+  const user = getUser()
+  return user && ROLE_MAP[user.role] === 'admin'
+})
+
+const { list, total, loading, pageNo, pageSize, params, handleSizeChange, handleCurrentChange, loadData } = useTable(getDevices, {
   name: '',
   number: '',
   laboratoryId: undefined,
   type: '',
   status: undefined
 })
+
+const { handleDelete } = useConfirm(deleteAdminDevice, loadData)
 </script>
 
 <template>
   <div class="page-container">
     <div class="page-header">
       <h2>设备资源</h2>
+      <router-link v-if="isAdmin" to="/admin/resource/device/new">
+        <el-button type="primary">新增设备</el-button>
+      </router-link>
     </div>
 
     <div class="search-bar">
@@ -46,6 +63,10 @@ const { list, total, loading, pageNo, pageSize, params, handleSizeChange, handle
               </div>
             </div>
           </router-link>
+          <div v-if="isAdmin" class="card-actions">
+            <el-button type="primary" link size="small" @click="router.push(`/admin/resource/device/edit/${item.id}`)">编辑</el-button>
+            <el-button type="danger" link size="small" @click="handleDelete(item.id, item.name)">删除</el-button>
+          </div>
         </div>
       </div>
       <el-empty v-else description="暂无设备" />
@@ -72,6 +93,9 @@ const { list, total, loading, pageNo, pageSize, params, handleSizeChange, handle
   padding: 40px 20px;
 }
 .page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 24px;
 }
 .page-header h2 {
@@ -131,6 +155,12 @@ const { list, total, loading, pageNo, pageSize, params, handleSizeChange, handle
   align-items: center;
   font-size: 12px;
   color: #c0c4cc;
+}
+.card-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 0 16px 12px;
 }
 .pagination-wrap {
   display: flex;

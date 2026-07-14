@@ -11,8 +11,8 @@ export function useConfirm(deleteApi, onSuccess) {
                 await deleteApi(id)
                 ElMessage.success('删除成功')
                 onSuccess && onSuccess()
-            } catch (e) {
-                ElMessage.error('删除失败，请重试')
+            } catch {
+                // 错误已由拦截器处理
             }
         }).catch((action) => {
             if (action !== 'cancel' && action !== 'close') {

@@ -1,8 +1,7 @@
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import { ElMessage } from 'element-plus'
 
-export function useDetail(fetchApi, errorMsg = '加载详情失败', { autoLoad = true } = {}) {
+export function useDetail(fetchApi, _errorMsg, { autoLoad = true } = {}) {
     const route = useRoute()
     const detail = ref(null)
     const loading = ref(false)
@@ -13,8 +12,8 @@ export function useDetail(fetchApi, errorMsg = '加载详情失败', { autoLoad 
             const res = await fetchApi(route.params.id)
             detail.value = res.data
             return res.data
-        } catch (error) {
-            ElMessage.error(errorMsg)
+        } catch {
+            // 错误已由拦截器处理
         } finally {
             loading.value = false
         }

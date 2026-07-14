@@ -73,9 +73,15 @@ service.interceptors.response.use(
                 break
         }
 
-        return Promise.reject(new Error(res.msg || 'Error'))
+        const err = new Error(res.msg || '请求失败')
+        err.__handled = true
+        return Promise.reject(err)
     },
     error => {
+        // 业务错误已在响应拦截器中显示，此处避免重复提示
+        if (error.__handled) {
+            return Promise.reject(error)
+        }
         // 网络错误或超时
         if (error.response) {
             const body = error.response.data

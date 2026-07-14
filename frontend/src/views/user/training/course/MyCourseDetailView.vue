@@ -16,9 +16,13 @@ const { detail, loading } = useDetail(getMyCourseDetail, '加载课程详情失�
           <span>教师：{{ detail.teacherName }}</span>
           <span>创建时间：{{ detail.createTime }}</span>
         </div>
-        <div v-if="detail.profile" class="detail-section">
+        <div v-if="detail.introduction" class="detail-section">
           <h3>课程简介</h3>
-          <p>{{ detail.profile }}</p>
+          <p>{{ detail.introduction }}</p>
+        </div>
+        <div v-if="detail.outline" class="detail-section">
+          <h3>课程大纲</h3>
+          <p>{{ detail.outline }}</p>
         </div>
       </template>
       <el-empty v-else description="课程不存在" />

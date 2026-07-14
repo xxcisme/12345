@@ -4,6 +4,7 @@ import { ref, computed } from 'vue'
 import { getUser, clearAuth } from '@/utils/local_storage'
 import { useRouter } from 'vue-router'
 import { ROLE_MAP } from '@/utils/constants'
+import { logout } from '@/api/auth'
 
 const router = useRouter()
 const user = ref(getUser())
@@ -12,15 +13,20 @@ const isLoggedIn = computed(() => !!user.value)
 const isAdmin = computed(() => user.value && ROLE_MAP[user.value.role] === 'admin')
 const isTeacher = computed(() => user.value && ROLE_MAP[user.value.role] === 'teacher')
 
-const handleLogout = () => {
+const handleLogout = async () => {
+  try {
+    await logout()
+  } catch {
+    // 即使 logout 失败也清除本地登录状态
+  }
   clearAuth()
   user.value = null
   router.push('/')
 }
 
-const refreshUser = () => {
+router.afterEach(() => {
   user.value = getUser()
-}
+})
 
 const navModules = computed(() => {
   const modules = [
@@ -36,7 +42,8 @@ const navModules = computed(() => {
       items: [
         { label: '媒体资源', path: (isAdmin.value || isTeacher.value) ? '/admin/resource/media' : '/resources/media' },
         { label: '实验室', path: isAdmin.value ? '/admin/resource/laboratories' : '/resources/laboratories' },
-        { label: '设备', path: isAdmin.value ? '/admin/resource/devices' : '/resources/devices' }
+        { label: '设备', path: isAdmin.value ? '/admin/resource/devices' : '/resources/devices' },
+        ...(isAdmin.value ? [{ label: '实验室申请审批', path: '/admin/resource/lab-applications' }] : [])
       ]
     }
   ]
@@ -121,7 +128,7 @@ const navModules = computed(() => {
       </div>
     </header>
     <main class="app-main">
-      <RouterView @user-login="refreshUser" />
+      <RouterView />
     </main>
   </div>
 </template>

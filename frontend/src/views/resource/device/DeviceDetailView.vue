@@ -13,6 +13,8 @@ const { detail, loading } = useDetail(getDeviceDetail, '加载设备详情失败
         <div class="detail-meta">
           <span>编号：{{ detail.number }}</span>
           <span>类型：{{ detail.type }}</span>
+          <span v-if="detail.versionNumber">版本号：{{ detail.versionNumber }}</span>
+          <span v-if="detail.laboratoryName">所属实验室：{{ detail.laboratoryName }}</span>
           <span>
             状态：
             <el-tag :type="detail.status === 0 ? 'success' : detail.status === 1 ? 'warning' : detail.status === 2 ? 'info' : 'danger'" size="small">
@@ -20,10 +22,6 @@ const { detail, loading } = useDetail(getDeviceDetail, '加载设备详情失败
             </el-tag>
           </span>
           <span>创建时间：{{ detail.createTime }}</span>
-        </div>
-        <div v-if="detail.profile" class="detail-section">
-          <h3>设备简介</h3>
-          <p>{{ detail.profile }}</p>
         </div>
       </template>
       <el-empty v-else description="设备不存在" />

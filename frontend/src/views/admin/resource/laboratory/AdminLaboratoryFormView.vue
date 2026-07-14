@@ -39,8 +39,11 @@ if (isEdit.value) {
         <el-form-item label="地址">
           <el-input v-model="form.address" placeholder="请输入地址" />
         </el-form-item>
-        <el-form-item label="最低工位">
-          <el-input-number v-model="form.minStation" :min="1" placeholder="最低工位" style="width: 100%" />
+        <el-form-item label="工位数量" required>
+          <el-input-number v-model="form.stationNum" :min="1" placeholder="工位数量" style="width: 100%" />
+        </el-form-item>
+        <el-form-item label="面积(㎡)">
+          <el-input v-model="form.area" placeholder="请输入面积" />
         </el-form-item>
         <el-form-item label="简介">
           <el-input v-model="form.profile" type="textarea" :rows="4" placeholder="请输入实验室简介" />

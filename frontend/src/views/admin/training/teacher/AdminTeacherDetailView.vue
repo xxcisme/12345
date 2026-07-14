@@ -11,8 +11,8 @@ const handleResetPwd = async () => {
   try {
     await resetAdminTeacherPassword(route.params.id)
     ElMessage.success('密码已重置为初始密码')
-  } catch (error) {
-    ElMessage.error('重置密码失败')
+  } catch {
+    // 错误已由拦截器处理
   }
 }
 </script>

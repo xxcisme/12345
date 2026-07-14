@@ -16,9 +16,17 @@ const { detail, loading } = useDetail(getMyExperimentDetail, '加载实验详情
           <span v-if="detail.objective">目标：{{ detail.objective }}</span>
           <span>创建时间：{{ detail.createTime }}</span>
         </div>
-        <div v-if="detail.profile" class="detail-section">
-          <h3>实验简介</h3>
-          <p>{{ detail.profile }}</p>
+        <div v-if="detail.steps" class="detail-section">
+          <h3>实验步骤</h3>
+          <p>{{ detail.steps }}</p>
+        </div>
+        <div v-if="detail.reportTemplate" class="detail-section">
+          <h3>报告模板</h3>
+          <p>{{ detail.reportTemplate }}</p>
+        </div>
+        <div v-if="detail.report" class="detail-section">
+          <h3>我的报告</h3>
+          <p>{{ detail.report }}</p>
         </div>
       </template>
       <el-empty v-else description="实验不存在" />

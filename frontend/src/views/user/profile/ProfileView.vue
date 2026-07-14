@@ -12,8 +12,8 @@ onMounted(async () => {
     const res = await getProfile()
     profile.value = res.data
     Object.assign(form.value, res.data)
-  } catch (error) {
-    ElMessage.error('加载个人信息失败')
+  } catch {
+    // 错误已由拦截器处理
   }
 })
 
@@ -26,8 +26,8 @@ const handleSave = async () => {
     const res = await getProfile()
     profile.value = res.data
     editMode.value = false
-  } catch (error) {
-    ElMessage.error('更新失败')
+  } catch {
+    // 错误已由拦截器处理
   }
 }
 </script>

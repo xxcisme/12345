@@ -1,5 +1,4 @@
 import { reactive, toRefs } from 'vue'
-import { ElMessage } from 'element-plus'
 
 export function useTable(fetchFn, defaultParams = {}) {
     const state = reactive({

@@ -1,19 +1,36 @@
 <script setup>
+import { computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { useTable } from '@/utils/composables/useTable'
 import { getLaboratories } from '@/api/resource'
+import { deleteAdminLaboratory } from '@/api/admin/resource'
+import { useConfirm } from '@/utils/composables/useConfirm'
+import { getUser } from '@/utils/local_storage'
+import { ROLE_MAP } from '@/utils/constants'
 
-const { list, total, loading, pageNo, pageSize, params, handleSizeChange, handleCurrentChange } = useTable(getLaboratories, {
+const router = useRouter()
+const isAdmin = computed(() => {
+  const user = getUser()
+  return user && ROLE_MAP[user.role] === 'admin'
+})
+
+const { list, total, loading, pageNo, pageSize, params, handleSizeChange, handleCurrentChange, loadData } = useTable(getLaboratories, {
   name: '',
   number: '',
   address: '',
   minStation: undefined
 })
+
+const { handleDelete } = useConfirm(deleteAdminLaboratory, loadData)
 </script>
 
 <template>
   <div class="page-container">
     <div class="page-header">
       <h2>实验室</h2>
+      <router-link v-if="isAdmin" to="/admin/resource/laboratory/new">
+        <el-button type="primary">新增实验室</el-button>
+      </router-link>
     </div>
 
     <div class="search-bar">
@@ -33,10 +50,14 @@ const { list, total, loading, pageNo, pageSize, params, handleSizeChange, handle
               <p class="card-desc">{{ item.address }}</p>
               <div class="card-meta">
                 <span>编号：{{ item.number }}</span>
-                <span>工位：{{ item.minStation }}</span>
+                <span>工位：{{ item.stationNum }}</span>
               </div>
             </div>
           </router-link>
+          <div v-if="isAdmin" class="card-actions">
+            <el-button type="primary" link size="small" @click="router.push(`/admin/resource/laboratory/edit/${item.id}`)">编辑</el-button>
+            <el-button type="danger" link size="small" @click="handleDelete(item.id, item.name)">删除</el-button>
+          </div>
         </div>
       </div>
       <el-empty v-else description="暂无实验室" />
@@ -63,6 +84,9 @@ const { list, total, loading, pageNo, pageSize, params, handleSizeChange, handle
   padding: 40px 20px;
 }
 .page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 24px;
 }
 .page-header h2 {
@@ -120,6 +144,12 @@ const { list, total, loading, pageNo, pageSize, params, handleSizeChange, handle
   justify-content: space-between;
   font-size: 12px;
   color: #c0c4cc;
+}
+.card-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 0 16px 12px;
 }
 .pagination-wrap {
   display: flex;

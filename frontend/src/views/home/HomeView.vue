@@ -72,8 +72,8 @@ onMounted(async () => {
   background: linear-gradient(135deg, #409eff, #337ecc);
   color: #fff;
   text-align: center;
-  padding: 40px 20px;
-  min-height: 22vh;
+  padding: 60px 20px;
+  min-height: 30vh;
   display: flex;
   flex-direction: column;
   justify-content: center;

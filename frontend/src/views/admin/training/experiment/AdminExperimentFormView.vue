@@ -42,8 +42,11 @@ if (isEdit.value) {
         <el-form-item label="实验目标">
           <el-input v-model="form.objective" type="textarea" :rows="3" placeholder="请输入实验目标" />
         </el-form-item>
-        <el-form-item label="实验简介">
-          <el-input v-model="form.profile" type="textarea" :rows="4" placeholder="请输入实验简介" />
+        <el-form-item label="实验步骤">
+          <el-input v-model="form.steps" type="textarea" :rows="6" placeholder="请输入实验步骤" />
+        </el-form-item>
+        <el-form-item label="报告模板">
+          <el-input v-model="form.reportTemplate" type="textarea" :rows="4" placeholder="请输入报告模板" />
         </el-form-item>
         <el-form-item>
           <el-button type="primary" :loading="submitting" @click="submit">保存</el-button>

@@ -18,8 +18,8 @@ const { list, total, loading, pageNo, pageSize, params, handleSizeChange, handle
 
     <div v-loading="loading">
       <el-table v-if="list.length" :data="list" stripe style="width: 100%">
-        <el-table-column prop="laboratoryName" label="实验室名称" min-width="180" />
-        <el-table-column prop="reason" label="申请原因" min-width="200" show-overflow-tooltip />
+        <el-table-column prop="labName" label="实验室名称" min-width="180" />
+        <el-table-column prop="name" label="实验名称" min-width="200" show-overflow-tooltip />
         <el-table-column label="状态" width="120">
           <template #default="{ row }">
             <el-tag :type="row.status === 0 ? 'warning' : row.status === 1 ? 'success' : 'danger'" size="small">
