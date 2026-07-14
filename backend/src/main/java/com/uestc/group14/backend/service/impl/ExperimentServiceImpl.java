@@ -35,7 +35,7 @@ public class ExperimentServiceImpl implements ExperimentService {
 
     @Override
     public IPage<ExperimentVO> listExperiments(Integer pageNo, Integer pageSize, String name, String number,
-                                               Long courseId, Integer status) {
+                                               Long courseId, Integer status)  {
         Page<Experiment> page = new Page<>(pageNo, pageSize);
         LambdaQueryWrapper<Experiment> wrapper = new LambdaQueryWrapper<>();
         if (StringUtils.hasText(name)) {
