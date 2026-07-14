@@ -26,10 +26,10 @@ const { list, total, loading, pageNo, pageSize, params, handleSizeChange, handle
         <el-table-column prop="studentName" label="学生姓名" width="120" />
         <el-table-column prop="courseName" label="课程名称" min-width="150" />
         <el-table-column prop="experimentName" label="实验名称" min-width="150" />
-        <el-table-column prop="score" label="成绩" width="100" />
+        <el-table-column prop="overallScore" label="成绩" width="100" />
         <el-table-column label="状态" width="100">
           <template #default="{ row }">
-            <el-tag :type="row.status === 1 ? 'success' : 'info'" size="small">{{ row.status === 1 ? '已发布' : '草稿' }}</el-tag>
+            <el-tag :type="row.publishStatus === 1 ? 'success' : 'info'" size="small">{{ row.publishStatus === 1 ? '已发布' : '草稿' }}</el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="createTime" label="评定时间" width="180" />

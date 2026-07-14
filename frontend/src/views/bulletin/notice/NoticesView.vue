@@ -19,7 +19,7 @@ const { list, total, loading, pageNo, pageSize, params, handleSizeChange, handle
               <el-tag type="warning" size="small" style="margin-right: 12px">公告</el-tag>
               <span>{{ item.title }}</span>
             </div>
-            <span class="notice-time">{{ item.createTime }}</span>
+            <span class="notice-time">{{ item.publishTime }}</span>
           </router-link>
         </div>
       </div>

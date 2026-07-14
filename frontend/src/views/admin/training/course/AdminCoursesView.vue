@@ -33,6 +33,7 @@ const { handlePublish, handleUnpublish } = usePublish(publishAdminCourse, unpubl
       <el-select v-model="params.status" placeholder="状态" clearable style="width: 120px" @change="handleCurrentChange(1)">
         <el-option label="草稿" :value="0" />
         <el-option label="已发布" :value="1" />
+        <el-option label="已下架" :value="2" />
       </el-select>
       <el-button type="primary" @click="handleCurrentChange(1)">搜索</el-button>
     </div>
@@ -44,7 +45,7 @@ const { handlePublish, handleUnpublish } = usePublish(publishAdminCourse, unpubl
         <el-table-column prop="courseType" label="类型" width="100" />
         <el-table-column label="状态" width="100">
           <template #default="{ row }">
-            <el-tag :type="row.status === 1 ? 'success' : 'info'" size="small">{{ row.status === 1 ? '已发布' : '草稿' }}</el-tag>
+            <el-tag :type="row.status === 1 ? 'success' : row.status === 2 ? 'warning' : 'info'" size="small">{{ row.status === 1 ? '已发布' : row.status === 2 ? '已下架' : '草稿' }}</el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="createTime" label="创建时间" width="180" />

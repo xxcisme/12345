@@ -17,10 +17,9 @@ const { list, total, loading, pageNo, pageSize, params, handleSizeChange, handle
           <div v-for="item in list" :key="item.id" class="news-item">
             <router-link :to="`/news/${item.id}`" class="news-link">
               <h3>{{ item.title }}</h3>
-              <p class="news-summary">{{ item.summary || item.content?.substring(0, 150) }}</p>
               <div class="news-meta">
-                <span>{{ item.origin }}</span>
-                <span>{{ item.createTime }}</span>
+                <span v-if="item.origin">{{ item.origin }}</span>
+                <span>{{ item.publishTime }}</span>
               </div>
             </router-link>
           </div>
@@ -79,12 +78,6 @@ const { list, total, loading, pageNo, pageSize, params, handleSizeChange, handle
   font-size: 18px;
   margin-bottom: 8px;
   color: #303133;
-}
-.news-summary {
-  font-size: 14px;
-  color: #909399;
-  margin-bottom: 12px;
-  line-height: 1.6;
 }
 .news-meta {
   display: flex;

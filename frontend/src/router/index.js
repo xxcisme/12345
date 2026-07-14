@@ -367,19 +367,19 @@ const routes = [
     path: '/admin/training/teaching-plans',
     name: '管理教学计划',
     component: () => import('@/views/admin/training/teaching-plan/AdminTeachingPlansView.vue'),
-    meta: { requiresAuth: true, roles: ['admin', 'teacher'] }
+    meta: { requiresAuth: true, roles: ['teacher'] }
   },
   {
     path: '/admin/training/teaching-plans/new',
     name: '添加教学计划',
     component: () => import('@/views/admin/training/teaching-plan/AdminTeachingPlanFormView.vue'),
-    meta: { requiresAuth: true, roles: ['admin', 'teacher'] }
+    meta: { requiresAuth: true, roles: ['teacher'] }
   },
   {
     path: '/admin/training/teaching-plans/edit/:id',
     name: '编辑教学计划',
     component: () => import('@/views/admin/training/teaching-plan/AdminTeachingPlanFormView.vue'),
-    meta: { requiresAuth: true, roles: ['admin', 'teacher'] }
+    meta: { requiresAuth: true, roles: ['teacher'] }
   }
 
   // // 错误页面 暂不实现，留作备用

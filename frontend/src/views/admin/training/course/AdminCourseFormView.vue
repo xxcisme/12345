@@ -39,20 +39,11 @@ if (isEdit.value) {
         <el-form-item label="课程类型">
           <el-input v-model="form.courseType" placeholder="请输入课程类型" />
         </el-form-item>
-        <el-form-item label="课时">
-          <el-input-number v-model="form.classHours" :min="1" placeholder="请输入课时" />
-        </el-form-item>
-        <el-form-item label="学分">
-          <el-input-number v-model="form.credit" :min="0" :precision="1" :step="0.5" placeholder="请输入学分" />
-        </el-form-item>
-        <el-form-item label="教师">
-          <el-input v-model="form.teacherName" placeholder="请输入教师姓名" />
+        <el-form-item label="教师ID" required>
+          <el-input-number v-model="form.teacherId" :min="1" placeholder="请输入教师ID" style="width: 100%" />
         </el-form-item>
         <el-form-item label="课程简介">
           <el-input v-model="form.introduction" type="textarea" :rows="4" placeholder="请输入课程简介" />
-        </el-form-item>
-        <el-form-item label="课程大纲">
-          <el-input v-model="form.outline" type="textarea" :rows="6" placeholder="请输入课程大纲" />
         </el-form-item>
         <el-form-item>
           <el-button type="primary" :loading="submitting" @click="submit">保存</el-button>

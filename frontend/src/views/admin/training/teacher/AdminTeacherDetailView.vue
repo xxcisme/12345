@@ -24,6 +24,9 @@ const handleResetPwd = async () => {
         <h2 class="detail-title">{{ detail.name }}</h2>
         <div class="detail-meta">
           <span>编号：{{ detail.teacherId }}</span>
+          <span>类型：{{ detail.typeName }}</span>
+          <span>手机：{{ detail.phone }}</span>
+          <span>邮箱：{{ detail.email }}</span>
           <span>单位：{{ detail.company }}</span>
           <span>
             状态：
@@ -31,9 +34,12 @@ const handleResetPwd = async () => {
           </span>
           <span>创建时间：{{ detail.createTime }}</span>
         </div>
-        <div v-if="detail.profile" class="detail-section">
-          <h3>教师简介</h3>
-          <p>{{ detail.profile }}</p>
+        <div v-if="detail.courses && detail.courses.length" class="detail-section">
+          <h3>授课记录</h3>
+          <el-table :data="detail.courses" stripe size="small">
+            <el-table-column prop="courseName" label="课程名称" />
+            <el-table-column prop="courseCode" label="课程编号" />
+          </el-table>
         </div>
         <div class="action-bar">
           <el-button type="warning" @click="handleResetPwd">重置密码</el-button>

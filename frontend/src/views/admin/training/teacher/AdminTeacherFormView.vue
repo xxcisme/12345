@@ -35,14 +35,23 @@ if (isEdit.value) {
         <el-form-item label="教师编号" required>
           <el-input v-model="form.teacherId" placeholder="请输入教师编号" />
         </el-form-item>
+        <el-form-item label="师资类型">
+          <el-select v-model="form.type" placeholder="请选择师资类型" style="width: 100%">
+            <el-option label="实训老师" value="0" />
+            <el-option label="非实训老师" value="1" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="手机号" required>
+          <el-input v-model="form.phone" placeholder="请输入手机号" />
+        </el-form-item>
+        <el-form-item label="邮箱">
+          <el-input v-model="form.email" placeholder="请输入邮箱" />
+        </el-form-item>
         <el-form-item label="单位">
           <el-input v-model="form.company" placeholder="请输入所属单位" />
         </el-form-item>
         <el-form-item label="在职状态">
           <el-switch v-model="form.onJob" active-text="在职" inactive-text="离职" />
-        </el-form-item>
-        <el-form-item label="简介">
-          <el-input v-model="form.profile" type="textarea" :rows="4" placeholder="请输入教师简介" />
         </el-form-item>
         <el-form-item>
           <el-button type="primary" :loading="submitting" @click="submit">保存</el-button>

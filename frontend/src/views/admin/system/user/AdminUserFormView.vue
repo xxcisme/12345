@@ -38,18 +38,28 @@ if (isEdit.value) {
         <el-form-item label="真实姓名">
           <el-input v-model="form.realName" placeholder="请输入真实姓名" />
         </el-form-item>
-        <el-form-item label="手机号">
+        <el-form-item label="手机号" required>
           <el-input v-model="form.phone" placeholder="请输入手机号" />
         </el-form-item>
         <el-form-item label="邮箱">
           <el-input v-model="form.email" placeholder="请输入邮箱" />
         </el-form-item>
-        <el-form-item label="角色">
+        <el-form-item label="角色" required>
           <el-select v-model="form.role" placeholder="请选择角色" style="width: 100%">
-            <el-option label="管理员" value="admin" />
-            <el-option label="教师" value="teacher" />
-            <el-option label="学生" value="student" />
+            <el-option label="学生" :value="1" />
+            <el-option label="老师" :value="2" />
+            <el-option label="社会人士" :value="3" />
+            <el-option label="管理员" :value="4" />
           </el-select>
+        </el-form-item>
+        <el-form-item label="学校编号">
+          <el-input v-model="form.schoolCode" placeholder="学生/教师必填" />
+        </el-form-item>
+        <el-form-item label="班级ID">
+          <el-input-number v-model="form.classId" :min="1" placeholder="学生必填" style="width: 100%" />
+        </el-form-item>
+        <el-form-item label="职业类型">
+          <el-input v-model="form.occupationType" placeholder="社会人士选填" />
         </el-form-item>
         <el-form-item>
           <el-button type="primary" :loading="submitting" @click="submit">保存</el-button>

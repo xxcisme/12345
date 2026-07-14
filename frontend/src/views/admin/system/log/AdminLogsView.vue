@@ -48,7 +48,7 @@ const handleClean = async (daysToKeep) => {
         <el-table-column prop="username" label="操作用户" width="120" />
         <el-table-column prop="action" label="操作" min-width="150" show-overflow-tooltip />
         <el-table-column prop="userRole" label="用户角色" width="100" />
-        <el-table-column prop="ip" label="IP地址" width="140" />
+        <el-table-column prop="ipAddress" label="IP地址" width="140" />
         <el-table-column prop="createTime" label="操作时间" width="180" />
       </el-table>
       <el-empty v-else description="暂无日志" />

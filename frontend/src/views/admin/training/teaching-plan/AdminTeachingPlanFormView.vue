@@ -38,11 +38,20 @@ if (isEdit.value) {
         <el-form-item label="计划名称" required>
           <el-input v-model="form.name" placeholder="请输入教学计划名称" />
         </el-form-item>
-        <el-form-item label="学期" required>
+        <el-form-item label="学期">
           <el-input v-model="form.semester" placeholder="请输入学期" />
         </el-form-item>
-        <el-form-item label="计划简介">
-          <el-input v-model="form.profile" type="textarea" :rows="4" placeholder="请输入教学计划简介" />
+        <el-form-item label="课程ID" required>
+          <el-input-number v-model="form.courseId" :min="1" placeholder="请输入课程ID" style="width: 100%" />
+        </el-form-item>
+        <el-form-item label="教师ID" required>
+          <el-input-number v-model="form.teacherId" :min="1" placeholder="请输入教师ID" style="width: 100%" />
+        </el-form-item>
+        <el-form-item label="实验ID列表" required>
+          <el-input v-model="form.experimentIds" placeholder="请输入实验ID，多个用逗号分隔" />
+        </el-form-item>
+        <el-form-item label="上课日期" required>
+          <el-input v-model="form.scheduleDates" placeholder="请输入上课日期，多个用逗号分隔" />
         </el-form-item>
         <el-form-item>
           <el-button type="primary" :loading="submitting" @click="submit">保存</el-button>
