@@ -40,6 +40,9 @@ const { handlePublish } = usePublish(publishAdminTeachingPlan, null, loadData)
       <el-table v-if="list.length" :data="list" stripe style="width: 100%">
         <el-table-column prop="name" label="计划名称" min-width="180" show-overflow-tooltip />
         <el-table-column prop="semester" label="学期" width="120" />
+        <el-table-column prop="className" label="班级" width="120" />
+        <el-table-column prop="startDate" label="开始日期" width="120" />
+        <el-table-column prop="endDate" label="结束日期" width="120" />
         <el-table-column label="状态" width="100">
           <template #default="{ row }">
             <el-tag :type="row.status === 1 ? 'success' : 'info'" size="small">{{ row.status === 1 ? '已发布' : '草稿' }}</el-tag>

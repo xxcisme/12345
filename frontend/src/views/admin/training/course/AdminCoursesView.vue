@@ -43,6 +43,9 @@ const { handlePublish, handleUnpublish } = usePublish(publishAdminCourse, unpubl
         <el-table-column prop="courseName" label="课程名称" min-width="180" show-overflow-tooltip />
         <el-table-column prop="courseCode" label="编号" width="120" />
         <el-table-column prop="courseType" label="类型" width="100" />
+        <el-table-column prop="classHours" label="课时" width="80" />
+        <el-table-column prop="credit" label="学分" width="80" />
+        <el-table-column prop="teacherName" label="负责教师" width="120" />
         <el-table-column label="状态" width="100">
           <template #default="{ row }">
             <el-tag :type="row.status === 1 ? 'success' : row.status === 2 ? 'warning' : 'info'" size="small">{{ row.status === 1 ? '已发布' : row.status === 2 ? '已下架' : '草稿' }}</el-tag>

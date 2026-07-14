@@ -1,6 +1,7 @@
 <script setup>
+import { ref, onMounted } from 'vue'
 import { useTable } from '@/utils/composables/useTable'
-import { getAdminExperiments, publishAdminExperiment, deleteAdminExperiment } from '@/api/admin/training'
+import { getAdminExperiments, publishAdminExperiment, deleteAdminExperiment, getAdminCourses } from '@/api/admin/training'
 import { useConfirm } from '@/utils/composables/useConfirm'
 import { usePublish } from '@/utils/composables/usePublish'
 
@@ -15,6 +16,21 @@ const { handleDelete } = useConfirm(deleteAdminExperiment, () => {
 })
 
 const { handlePublish } = usePublish(publishAdminExperiment, null, loadData)
+
+const courseOptions = ref([])
+
+const fetchCourseOptions = async () => {
+  try {
+    const res = await getAdminCourses({ pageNo: 1, pageSize: 1000 })
+    courseOptions.value = res.data?.records || []
+  } catch {
+    // 错误已由拦截器处理
+  }
+}
+
+onMounted(() => {
+  fetchCourseOptions()
+})
 </script>
 
 <template>
@@ -28,6 +44,9 @@ const { handlePublish } = usePublish(publishAdminExperiment, null, loadData)
 
     <div class="search-bar">
       <el-input v-model="params.name" placeholder="搜索实验名称" clearable style="width: 200px" @keyup.enter="handleCurrentChange(1)" />
+      <el-select v-model="params.courseId" placeholder="所属课程" clearable style="width: 200px" @change="handleCurrentChange(1)">
+        <el-option v-for="c in courseOptions" :key="c.id" :label="c.courseName" :value="c.id" />
+      </el-select>
       <el-button type="primary" @click="handleCurrentChange(1)">搜索</el-button>
     </div>
 

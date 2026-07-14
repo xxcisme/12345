@@ -19,7 +19,7 @@ Mock.mock(/\/api\/v1\/auth\/login/, 'post', (options) => {
   const body = JSON.parse(options.body)
   return ok({
     token: 'mock-token-' + Date.now(),
-    user: { id: 1, username: body.username || 'admin', role: 2, realName: '管理员' }
+    user: { id: 1, username: body.username || 'admin', role: 4, realName: '管理员' }
   })
 })
 

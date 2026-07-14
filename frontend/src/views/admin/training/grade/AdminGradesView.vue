@@ -1,7 +1,7 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useTable } from '@/utils/composables/useTable'
-import { getAdminGrades, getAdminGradeStatistics } from '@/api/admin/training'
+import { getAdminGrades, getAdminGradeStatistics, getAdminCourses } from '@/api/admin/training'
 
 const { list, total, loading, pageNo, pageSize, params, handleSizeChange, handleCurrentChange } = useTable(getAdminGrades, {
   courseId: undefined,
@@ -12,6 +12,21 @@ const { list, total, loading, pageNo, pageSize, params, handleSizeChange, handle
 
 const statistics = ref(null)
 const statisticsLoading = ref(false)
+
+const courseOptions = ref([])
+
+const fetchCourseOptions = async () => {
+  try {
+    const res = await getAdminCourses({ pageNo: 1, pageSize: 1000 })
+    courseOptions.value = res.data?.records || []
+  } catch {
+    // 错误已由拦截器处理
+  }
+}
+
+onMounted(() => {
+  fetchCourseOptions()
+})
 
 const handleStatistics = async () => {
   statisticsLoading.value = true
@@ -33,6 +48,10 @@ const handleStatistics = async () => {
 
     <div class="search-bar">
       <el-input v-model="params.studentName" placeholder="搜索学生姓名" clearable style="width: 200px" @keyup.enter="handleCurrentChange(1)" />
+      <el-select v-model="params.courseId" placeholder="所属课程" clearable style="width: 200px" @change="handleCurrentChange(1)">
+        <el-option v-for="c in courseOptions" :key="c.id" :label="c.courseName" :value="c.id" />
+      </el-select>
+      <el-input v-model="params.classId" placeholder="班级ID" clearable style="width: 150px" @keyup.enter="handleCurrentChange(1)" />
       <el-button type="primary" @click="handleCurrentChange(1)">搜索</el-button>
     </div>
 
