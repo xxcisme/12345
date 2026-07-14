@@ -10,11 +10,7 @@ import com.uestc.group14.backend.common.exception.ErrorCode;
 import com.uestc.group14.backend.common.utils.Sha256Util;
 import com.uestc.group14.backend.dao.UserMapper;
 import com.uestc.group14.backend.dao.UserProfileMapper;
-import com.uestc.group14.backend.dto.admin.UserAddDTO;
-import com.uestc.group14.backend.dto.admin.UserQueryDTO;
-import com.uestc.group14.backend.dto.admin.UserResetPwdDTO;
-import com.uestc.group14.backend.dto.admin.UserRoleUpdateDTO;
-import com.uestc.group14.backend.dto.admin.UserStatusUpdateDTO;
+import com.uestc.group14.backend.dto.admin.*;
 import com.uestc.group14.backend.service.AdminUserService;
 import com.uestc.group14.backend.vo.admin.AdminUserVO;
 import lombok.RequiredArgsConstructor;
@@ -132,43 +128,6 @@ public class AdminUserServiceImpl implements AdminUserService {
 
     @Override
     @Transactional
-    public void updateStatus(UserStatusUpdateDTO dto) {
-        UserEntity user = userMapper.selectById(dto.getUserId());
-        if (user == null || user.getDelFlag() == 1) {
-            throw new BusinessException(ErrorCode.USER_NOT_FOUND);
-        }
-        user.setStatus(dto.getStatus());
-        userMapper.updateById(user);
-    }
-
-    @Override
-    @Transactional
-    public void updateRole(UserRoleUpdateDTO dto) {
-        UserEntity user = userMapper.selectById(dto.getUserId());
-        if (user == null || user.getDelFlag() == 1) {
-            throw new BusinessException(ErrorCode.USER_NOT_FOUND);
-        }
-        if (!ROLE_MAP.containsKey(dto.getRole())) {
-            throw new BusinessException(ErrorCode.PARAM_ERROR);
-        }
-        user.setRole(dto.getRole());
-        userMapper.updateById(user);
-    }
-
-    @Override
-    @Transactional
-    public void resetPassword(UserResetPwdDTO dto) {
-        UserEntity user = userMapper.selectById(dto.getUserId());
-        if (user == null || user.getDelFlag() == 1) {
-            throw new BusinessException(ErrorCode.USER_NOT_FOUND);
-        }
-        String newPwd = StringUtils.hasText(dto.getNewPassword()) ? dto.getNewPassword() : "123456";
-        user.setPasswordHash(Sha256Util.encrypt(newPwd));
-        userMapper.updateById(user);
-    }
-
-    @Override
-    @Transactional
     public Long addUser(UserAddDTO dto) {
         // 检查用户名唯一性
         LambdaQueryWrapper<UserEntity> usernameWrapper = new LambdaQueryWrapper<>();
@@ -190,24 +149,105 @@ public class AdminUserServiceImpl implements AdminUserService {
         user.setRole(dto.getRole());
         user.setPhone(dto.getPhone());
         user.setEmail(dto.getEmail());
-        user.setStatus(1); // 默认启用
+        user.setStatus(1);
         user.setDelFlag(0);
         user.setCreateTime(LocalDateTime.now());
         user.setUpdateTime(LocalDateTime.now());
         userMapper.insert(user);
 
         // 创建用户详细信息
-        if (StringUtils.hasText(dto.getRealName()) || StringUtils.hasText(dto.getSchoolCode()) ||
-                StringUtils.hasText(dto.getOccupationType())) {
-            UserProfile profile = new UserProfile();
-            profile.setUserId(user.getId());
-            profile.setRealName(dto.getRealName());
-            profile.setSchoolCode(dto.getSchoolCode());
-            profile.setOccupationType(dto.getOccupationType());
-            userProfileMapper.insert(profile);
-        }
+        UserProfile profile = new UserProfile();
+        profile.setUserId(user.getId());
+        profile.setRealName(dto.getRealName());
+        profile.setSchoolCode(dto.getSchoolCode());
+        profile.setClassId(dto.getClassId());
+        profile.setOccupationType(dto.getOccupationType());
+        userProfileMapper.insert(profile);
 
         log.info("管理员新增用户成功 - username: {}, role: {}", dto.getUsername(), dto.getRole());
         return user.getId();
+    }
+
+    @Override
+    @Transactional
+    public void updateUser(UserUpdateDTO dto) {
+        UserEntity user = userMapper.selectById(dto.getId());
+        if (user == null || user.getDelFlag() == 1) {
+            throw new BusinessException(ErrorCode.USER_NOT_FOUND);
+        }
+
+
+        if (StringUtils.hasText(dto.getPhone())) {
+            user.setPhone(dto.getPhone());
+        }
+        if (StringUtils.hasText(dto.getEmail())) {
+            user.setEmail(dto.getEmail());
+        }
+        userMapper.updateById(user);
+
+        // 更新 profile
+        UserProfile profile = userProfileMapper.selectOne(
+                new LambdaQueryWrapper<UserProfile>().eq(UserProfile::getUserId, dto.getId())
+        );
+        if (profile == null) {
+            profile = new UserProfile();
+            profile.setUserId(dto.getId());
+        }
+        if (StringUtils.hasText(dto.getRealName())) {
+            profile.setRealName(dto.getRealName());
+        }
+        if (StringUtils.hasText(dto.getSchoolCode())) {
+            profile.setSchoolCode(dto.getSchoolCode());
+        }
+        if (dto.getClassId() != null) {
+            profile.setClassId(dto.getClassId());
+        }
+        if (StringUtils.hasText(dto.getOccupationType())) {
+            profile.setOccupationType(dto.getOccupationType());
+        }
+
+        if (profile.getId() == null) {
+            userProfileMapper.insert(profile);
+        } else {
+            userProfileMapper.updateById(profile);
+        }
+        log.info("管理员更新用户信息 - userId: {}", dto.getId());
+    }
+
+    @Override
+    @Transactional
+    public void updateUserStatus(Long userId, Integer status) {
+        UserEntity user = userMapper.selectById(userId);
+        if (user == null || user.getDelFlag() == 1) {
+            throw new BusinessException(ErrorCode.USER_NOT_FOUND);
+        }
+        user.setStatus(status);
+        userMapper.updateById(user);
+        log.info("管理员切换用户状态 - userId: {}, status: {}", userId, status);
+    }
+
+    @Override
+    @Transactional
+    public void deleteUser(Long userId) {
+        UserEntity user = userMapper.selectById(userId);
+        if (user == null || user.getDelFlag() == 1) {
+            throw new BusinessException(ErrorCode.USER_NOT_FOUND);
+        }
+        // 逻辑删除
+        userMapper.deleteById(userId);
+        log.info("管理员删除用户 - userId: {}", userId);
+    }
+
+    @Override
+    @Transactional
+    public void resetPassword(Long userId, String newPassword) {
+        UserEntity user = userMapper.selectById(userId);
+        if (user == null || user.getDelFlag() == 1) {
+            throw new BusinessException(ErrorCode.USER_NOT_FOUND);
+        }
+        String pwd = StringUtils.hasText(newPassword) ? newPassword : "123456";
+        user.setPasswordHash(Sha256Util.encrypt(pwd));
+        userMapper.updateById(user);
+        log.info("管理员重置用户密码 - userId: {}", userId);
     }
 }

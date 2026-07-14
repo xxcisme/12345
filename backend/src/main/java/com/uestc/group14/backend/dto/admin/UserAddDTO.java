@@ -9,7 +9,6 @@ import lombok.Data;
 
 @Data
 public class UserAddDTO {
-
     @NotBlank(message = "用户名不能为空")
     @Size(min = 4, max = 16, message = "用户名必须为4-16位字母或数字")
     private String username;
@@ -30,5 +29,9 @@ public class UserAddDTO {
 
     private String realName;
     private String schoolCode;
+
+    // 新增字段：班级ID（学生必填，其他角色可选）
+    private Long classId;
+
     private String occupationType;
 }

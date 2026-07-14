@@ -9,4 +9,5 @@ public interface OperationLogService {
     IPage<OperationLogVO> listLogs(OperationLogQueryDTO queryDTO);
     void exportLogs(OperationLogQueryDTO queryDTO, HttpServletResponse response);
     void log(Long userId, String userRole, String username, String action, String ipAddress);
+    int cleanLogs(Integer daysToKeep);  // 新增
 }

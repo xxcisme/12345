@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.io.IOException;
@@ -58,6 +59,19 @@ public class OperationLogServiceImpl implements OperationLogService {
         Page<OperationLogVO> voPage = new Page<>(queryDTO.getPageNo(), queryDTO.getPageSize(), entityPage.getTotal());
         voPage.setRecords(voList);
         return voPage;
+    }
+    @Override
+    @Transactional
+    public int cleanLogs(Integer daysToKeep) {
+        if (daysToKeep == null || daysToKeep < 0) {
+            throw new BusinessException(ErrorCode.PARAM_ERROR);
+        }
+        LocalDateTime cutoff = LocalDateTime.now().minusDays(daysToKeep);
+        LambdaQueryWrapper<OperationLog> wrapper = new LambdaQueryWrapper<>();
+        wrapper.lt(OperationLog::getCreateTime, cutoff);
+        int deleted = operationLogMapper.delete(wrapper);
+        log.info("清理日志 - 保留天数: {}, 删除条数: {}", daysToKeep, deleted);
+        return deleted;
     }
 
     @Override
