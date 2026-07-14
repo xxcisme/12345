@@ -2,6 +2,7 @@
 import { useTable } from '@/utils/composables/useTable'
 import { getAdminLogs, exportAdminLogs, cleanAdminLogs } from '@/api/admin/system'
 import { downloadCsv } from '@/utils/download'
+import { ElMessage } from 'element-plus'
 
 const { list, total, loading, pageNo, pageSize, params, handleSizeChange, handleCurrentChange, loadData } = useTable(getAdminLogs, {
   username: '',
