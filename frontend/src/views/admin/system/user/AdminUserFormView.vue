@@ -20,3 +20,61 @@ if (isEdit.value) {
   })
 }
 </script>
+
+<template>
+  <div class="page-container">
+    <div class="page-header">
+      <h2>{{ isEdit ? '编辑用户' : '新增用户' }}</h2>
+    </div>
+
+    <div class="form-card">
+      <el-form ref="formRef" :model="form" label-width="100px" style="max-width: 560px">
+        <el-form-item label="用户名" required>
+          <el-input v-model="form.username" placeholder="请输入用户名" :disabled="isEdit" />
+        </el-form-item>
+        <el-form-item v-if="!isEdit" label="密码" required>
+          <el-input v-model="form.password" type="password" placeholder="请输入密码" show-password />
+        </el-form-item>
+        <el-form-item label="真实姓名">
+          <el-input v-model="form.realName" placeholder="请输入真实姓名" />
+        </el-form-item>
+        <el-form-item label="手机号">
+          <el-input v-model="form.phone" placeholder="请输入手机号" />
+        </el-form-item>
+        <el-form-item label="邮箱">
+          <el-input v-model="form.email" placeholder="请输入邮箱" />
+        </el-form-item>
+        <el-form-item label="角色">
+          <el-select v-model="form.role" placeholder="请选择角色" style="width: 100%">
+            <el-option label="管理员" value="admin" />
+            <el-option label="教师" value="teacher" />
+            <el-option label="学生" value="student" />
+          </el-select>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" :loading="submitting" @click="submit">保存</el-button>
+          <el-button @click="router.push('/admin/system/users')">取消</el-button>
+        </el-form-item>
+      </el-form>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.page-container {
+  padding: 20px;
+}
+.page-header {
+  margin-bottom: 20px;
+}
+.page-header h2 {
+  font-size: 20px;
+  color: #303133;
+}
+.form-card {
+  background: #fff;
+  border-radius: 8px;
+  padding: 32px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+</style>

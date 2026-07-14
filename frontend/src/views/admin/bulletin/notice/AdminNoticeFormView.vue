@@ -29,3 +29,45 @@ if (isEdit.value) {
   })
 }
 </script>
+
+<template>
+  <div class="page-container">
+    <div class="page-header">
+      <h2>{{ isEdit ? '编辑公告' : '新增公告' }}</h2>
+    </div>
+
+    <div class="form-card">
+      <el-form ref="formRef" :model="form" label-width="100px" style="max-width: 640px">
+        <el-form-item label="标题" required>
+          <el-input v-model="form.title" placeholder="请输入公告标题" />
+        </el-form-item>
+        <el-form-item label="内容" required>
+          <el-input v-model="form.content" type="textarea" :rows="6" placeholder="请输入公告内容" />
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" :loading="submitting" @click="submit">保存</el-button>
+          <el-button @click="router.push('/admin/bulletin/notice')">取消</el-button>
+        </el-form-item>
+      </el-form>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.page-container {
+  padding: 20px;
+}
+.page-header {
+  margin-bottom: 20px;
+}
+.page-header h2 {
+  font-size: 20px;
+  color: #303133;
+}
+.form-card {
+  background: #fff;
+  border-radius: 8px;
+  padding: 32px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+</style>

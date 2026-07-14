@@ -21,3 +21,49 @@ const handleSubmit = async () => {
   }
 }
 </script>
+
+<template>
+  <div class="page-container">
+    <div class="page-header">
+      <h2>修改密码</h2>
+    </div>
+
+    <div class="form-card">
+      <el-form ref="formRef" :model="form" label-width="120px" style="max-width: 480px">
+        <el-form-item label="原密码" required>
+          <el-input v-model="form.oldPassword" type="password" placeholder="请输入原密码" show-password />
+        </el-form-item>
+        <el-form-item label="新密码" required>
+          <el-input v-model="form.newPassword" type="password" placeholder="请输入新密码" show-password />
+        </el-form-item>
+        <el-form-item label="确认新密码" required>
+          <el-input v-model="form.confirmPassword" type="password" placeholder="请再次输入新密码" show-password />
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" :loading="loading" @click="handleSubmit">确认修改</el-button>
+        </el-form-item>
+      </el-form>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.page-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+.page-header {
+  margin-bottom: 24px;
+}
+.page-header h2 {
+  font-size: 24px;
+  color: #303133;
+}
+.form-card {
+  background: #fff;
+  border-radius: 8px;
+  padding: 32px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+</style>

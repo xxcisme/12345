@@ -20,7 +20,7 @@ export function useTable(fetchFn, defaultParams = {}) {
                 ...state.params
             })
             state.list = res.data?.records || res.data || []
-            state.total = res.total || 0
+            state.total = res.data?.total || 0
         } catch (e) {
             // 错误已在拦截器处理
         } finally {

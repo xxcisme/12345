@@ -45,3 +45,61 @@ if (isEdit.value) {
   })
 }
 </script>
+
+<template>
+  <div class="page-container">
+    <div class="page-header">
+      <h2>{{ isEdit ? '编辑新闻' : '新增新闻' }}</h2>
+    </div>
+
+    <div class="form-card">
+      <el-form ref="formRef" :model="form" label-width="100px" style="max-width: 640px">
+        <el-form-item label="标题" required>
+          <el-input v-model="form.title" placeholder="请输入新闻标题" />
+        </el-form-item>
+        <el-form-item label="来源">
+          <el-input v-model="form.origin" placeholder="请输入新闻来源" />
+        </el-form-item>
+        <el-form-item label="内容" required>
+          <el-input v-model="form.content" type="textarea" :rows="6" placeholder="请输入新闻内容" />
+        </el-form-item>
+        <el-form-item label="封面图片">
+          <el-upload
+            class="upload-cover"
+            action="/api/upload"
+            :show-file-list="!!form.enclosure"
+            :on-success="handleUploadSuccess"
+            :on-remove="handleRemove"
+            :file-list="form.enclosure ? [{ name: 'cover', url: form.enclosure }] : []"
+            list-type="picture"
+          >
+            <el-button size="small" type="primary">点击上传</el-button>
+          </el-upload>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" :loading="submitting" @click="submit">保存</el-button>
+          <el-button @click="router.push('/admin/bulletin/news')">取消</el-button>
+        </el-form-item>
+      </el-form>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.page-container {
+  padding: 20px;
+}
+.page-header {
+  margin-bottom: 20px;
+}
+.page-header h2 {
+  font-size: 20px;
+  color: #303133;
+}
+.form-card {
+  background: #fff;
+  border-radius: 8px;
+  padding: 32px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+</style>

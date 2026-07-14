@@ -82,9 +82,82 @@ const { loadDetail } = useDetail(getResourceDetail, '加载资源详情失败', 
 if (isEdit.value) {
   loadDetail().then(data => {
     if (data) {
-      const { id, name, type, category, school, leader, isShared, profile } = data
-      setFormData({ id, name, type, category, school, leader, isShared, profile })
+      delete data.status
+      setFormData(data)
     }
   })
 }
 </script>
+
+<template>
+  <div class="page-container">
+    <div class="page-header">
+      <h2>{{ isEdit ? '编辑资源' : '新增资源' }}</h2>
+    </div>
+
+    <div class="form-card">
+      <el-form ref="formRef" :model="form" label-width="100px" style="max-width: 640px">
+        <el-form-item label="资源名称" required>
+          <el-input v-model="form.name" placeholder="请输入资源名称" />
+        </el-form-item>
+        <el-form-item label="资源类型" required>
+          <el-select v-model="form.type" placeholder="请选择资源类型" style="width: 100%">
+            <el-option label="视频" :value="1" />
+            <el-option label="音频" :value="2" />
+            <el-option label="文档" :value="3" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="分类">
+          <el-input v-model="form.category" placeholder="请输入分类" />
+        </el-form-item>
+        <el-form-item label="学校">
+          <el-input v-model="form.school" placeholder="请输入学校" />
+        </el-form-item>
+        <el-form-item label="负责人">
+          <el-input v-model="form.leader" placeholder="请输入负责人" />
+        </el-form-item>
+        <el-form-item label="共享">
+          <el-switch v-model="form.isShared" />
+        </el-form-item>
+        <el-form-item label="资源简介">
+          <el-input v-model="form.profile" type="textarea" :rows="4" placeholder="请输入资源简介" />
+        </el-form-item>
+        <el-form-item v-if="!isEdit" label="上传文件" required>
+          <el-upload
+            :auto-upload="false"
+            :file-list="fileList"
+            :accept="fileAccept"
+            :limit="1"
+            :on-change="handleFileChange"
+            :on-remove="handleRemove"
+          >
+            <el-button type="primary">选择文件</el-button>
+          </el-upload>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" :loading="submitting" @click="handleSubmit">保存</el-button>
+          <el-button @click="router.push('/admin/resource/media')">取消</el-button>
+        </el-form-item>
+      </el-form>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.page-container {
+  padding: 20px;
+}
+.page-header {
+  margin-bottom: 20px;
+}
+.page-header h2 {
+  font-size: 20px;
+  color: #303133;
+}
+.form-card {
+  background: #fff;
+  border-radius: 8px;
+  padding: 32px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+</style>
