@@ -8,7 +8,9 @@ export function useForm(createApi, updateApi, onSuccess) {
     const isEdit = ref(false)
 
     const resetForm = () => {
-        Object.keys(form).forEach(key => delete form[key])
+        Object.keys(form).forEach(key => {
+            form[key] = undefined
+        })
         isEdit.value = false
     }
 
@@ -18,18 +20,18 @@ export function useForm(createApi, updateApi, onSuccess) {
     }
 
     const submit = async () => {
-        if (formRef.value) {
-            await formRef.value.validate()
-        }
         submitting.value = true
         try {
+            if (formRef.value) {
+                await formRef.value.validate()
+            }
             const api = isEdit.value ? updateApi : createApi
             const res = await api(form)
             ElMessage.success(isEdit.value ? '修改成功' : '新增成功')
             onSuccess && onSuccess(res)
             return res
         } catch (e) {
-            // 错误已处理
+            // 验证失败或接口错误均由拦截器处理
         } finally {
             submitting.value = false
         }

@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { ROLE_MAP } from '@/utils/constants'
+import { getToken, getUser } from '@/utils/local_storage'
 
 const routes = [
   // 认证
@@ -398,8 +399,8 @@ const router = createRouter({
 
 // 路由守卫：检查登录状态与角色权限
 router.beforeEach((to, from, next) => {
-  const token = localStorage.getItem('token')
-  const user = JSON.parse(localStorage.getItem('user') || 'null')
+  const token = getToken()
+  const user = getUser()
 
   if (to.meta.requiresAuth && !token) {
     next({ name: '登录', query: { redirect: to.fullPath } })

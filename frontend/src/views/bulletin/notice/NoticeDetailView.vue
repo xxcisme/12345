@@ -1,13 +1,6 @@
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
 import { getNoticeDetail } from '@/api/bulletin'
+import { useDetail } from '@/utils/composables/useDetail'
 
-const route = useRoute()
-const detail = ref(null)
-
-onMounted(async () => {
-  const res = await getNoticeDetail(route.params.id)
-  detail.value = res.data
-})
+const { detail, loading } = useDetail(getNoticeDetail, '加载公告详情失败')
 </script>

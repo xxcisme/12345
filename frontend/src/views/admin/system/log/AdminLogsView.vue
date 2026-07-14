@@ -1,6 +1,7 @@
 <script setup>
 import { useTable } from '@/utils/composables/useTable'
 import { getAdminLogs, exportAdminLogs, cleanAdminLogs } from '@/api/admin/system'
+import { downloadExcel } from '@/utils/download'
 import { ElMessage } from 'element-plus'
 
 const { list, total, loading, pageNo, pageSize, params, handleSizeChange, handleCurrentChange, loadData } = useTable(getAdminLogs, {
@@ -12,13 +13,7 @@ const { list, total, loading, pageNo, pageSize, params, handleSizeChange, handle
 })
 
 const handleExport = async () => {
-  const res = await exportAdminLogs(params)
-  // 下载文件
-  const blob = new Blob([res.data], { type: 'application/vnd.ms-excel' })
-  const link = document.createElement('a')
-  link.href = URL.createObjectURL(blob)
-  link.download = `logs_${Date.now()}.xls`
-  link.click()
+  await downloadExcel(exportAdminLogs, params.value, `logs_${Date.now()}.xls`)
 }
 
 const handleClean = async (daysToKeep) => {

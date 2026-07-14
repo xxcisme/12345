@@ -37,13 +37,13 @@ service.interceptors.response.use(
 
         const res = response.data
         const code = Number(res.code)
+
         // 成功
         if (code === 200) {
             return res
         }
-        // 业务错误统一提示
-        ElMessage.error(res.msg || '请求失败')
 
+        // 根据后端错误码分别处理
         switch (code) {
             case 401:
                 clearAuth()
@@ -51,23 +51,38 @@ service.interceptors.response.use(
                     name: '登录',
                     query: { redirect: router.currentRoute.value.fullPath }
                 })
-                break;
+                break
             case 403:
+                ElMessage.error(res.msg || '没有访问权限')
                 if (window.history.length > 1) {
                     router.go(-1)
                 } else {
                     router.push({ name: '首页' })
                 }
-                break;
+                break
+            case 400:
+            case 404:
+            case 405:
+            case 423:
+            case 429:
+            case 500:
+            case 501:
+            case 999:
             default:
-                break;
+                ElMessage.error(res.msg || '请求失败')
+                break
         }
 
         return Promise.reject(new Error(res.msg || 'Error'))
     },
     error => {
         // 网络错误或超时
-        ElMessage.error(error.message || '网络异常，请稍后重试')
+        if (error.response) {
+            const body = error.response.data
+            ElMessage.error((body && body.msg) || error.message || '网络异常，请稍后重试')
+        } else {
+            ElMessage.error(error.message || '网络异常，请稍后重试')
+        }
         return Promise.reject(error)
     }
 )

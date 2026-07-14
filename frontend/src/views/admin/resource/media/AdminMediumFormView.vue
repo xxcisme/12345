@@ -1,15 +1,15 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { addAdminResource, updateAdminResource } from '@/api/admin/resource'
 import { getResourceDetail } from '@/api/resource'
 import { buildFormData } from '@/utils/upload'
 import { useForm } from '@/utils/composables/useForm'
+import { useDetail } from '@/utils/composables/useDetail'
 
-const route = useRoute()
 const router = useRouter()
-const isEdit = ref(!!route.params.id)
+const isEdit = ref(!!router.currentRoute.value.params.id)
 
 const file = ref(null)
 const fileList = ref([])
@@ -25,7 +25,7 @@ const defaultForm = {
   profile: ''
 }
 
-const { form, formRef, submitting, setFormData, submit } = useForm(
+const { form, formRef, submitting, setFormData } = useForm(
   addAdminResource,
   updateAdminResource,
   () => router.push('/admin/resource/media')
@@ -77,11 +77,14 @@ const handleSubmit = async () => {
   }
 }
 
-onMounted(async () => {
-  if (isEdit.value) {
-    const res = await getResourceDetail(route.params.id)
-    const { id, name, type, category, school, leader, isShared, profile } = res.data
-    setFormData({ id, name, type, category, school, leader, isShared, profile })
-  }
-})
+const { loadDetail } = useDetail(getResourceDetail, '加载资源详情失败', { autoLoad: false })
+
+if (isEdit.value) {
+  loadDetail().then(data => {
+    if (data) {
+      const { id, name, type, category, school, leader, isShared, profile } = data
+      setFormData({ id, name, type, category, school, leader, isShared, profile })
+    }
+  })
+}
 </script>

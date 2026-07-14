@@ -1,21 +1,22 @@
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { addAdminUser, updateAdminUser, getAdminUserDetail } from '@/api/admin/system'
 import { useForm } from '@/utils/composables/useForm'
+import { useDetail } from '@/utils/composables/useDetail'
 
-const route = useRoute()
 const router = useRouter()
-const isEdit = ref(!!route.params.id)
+const isEdit = ref(!!router.currentRoute.value.params.id)
 
 const { form, formRef, submitting, setFormData, submit } = useForm(addAdminUser, updateAdminUser, () => {
   router.push('/admin/system/users')
 })
 
-onMounted(async () => {
-  if (isEdit.value) {
-    const res = await getAdminUserDetail(route.params.id)
-    setFormData(res.data)
-  }
-})
+const { loadDetail } = useDetail(getAdminUserDetail, '加载用户详情失败', { autoLoad: false })
+
+if (isEdit.value) {
+  loadDetail().then(data => {
+    if (data) setFormData(data)
+  })
+}
 </script>

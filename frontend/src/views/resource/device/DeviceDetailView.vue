@@ -1,13 +1,6 @@
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
 import { getDeviceDetail } from '@/api/resource'
+import { useDetail } from '@/utils/composables/useDetail'
 
-const route = useRoute()
-const detail = ref(null)
-
-onMounted(async () => {
-  const res = await getDeviceDetail(route.params.id)
-  detail.value = res.data
-})
+const { detail, loading } = useDetail(getDeviceDetail, '加载设备详情失败')
 </script>

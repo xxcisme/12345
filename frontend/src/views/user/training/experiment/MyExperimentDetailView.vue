@@ -1,13 +1,6 @@
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
 import { getMyExperimentDetail } from '@/api/user'
+import { useDetail } from '@/utils/composables/useDetail'
 
-const route = useRoute()
-const detail = ref(null)
-
-onMounted(async () => {
-  const res = await getMyExperimentDetail(route.params.id)
-  detail.value = res.data
-})
+const { detail, loading } = useDetail(getMyExperimentDetail, '加载实验详情失败')
 </script>

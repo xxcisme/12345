@@ -1,13 +1,6 @@
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
 import { getNewsDetail } from '@/api/bulletin'
+import { useDetail } from '@/utils/composables/useDetail'
 
-const route = useRoute()
-const detail = ref(null)
-
-onMounted(async () => {
-  const res = await getNewsDetail(route.params.id)
-  detail.value = res.data
-})
+const { detail, loading } = useDetail(getNewsDetail, '加载新闻详情失败')
 </script>

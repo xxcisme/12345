@@ -2,7 +2,7 @@
 import { useTable } from '@/utils/composables/useTable'
 import { getAdminExperiments, publishAdminExperiment, deleteAdminExperiment } from '@/api/admin/training'
 import { useConfirm } from '@/utils/composables/useConfirm'
-import { ElMessage } from 'element-plus'
+import { usePublish } from '@/utils/composables/usePublish'
 
 const { list, total, loading, pageNo, pageSize, params, handleSizeChange, handleCurrentChange, loadData } = useTable(getAdminExperiments, {
   name: '',
@@ -15,9 +15,5 @@ const { handleDelete } = useConfirm(deleteAdminExperiment, () => {
   handleCurrentChange(pageNo.value)
 })
 
-const handlePublish = async (id) => {
-  await publishAdminExperiment(id)
-  ElMessage.success('发布成功')
-  loadData()
-}
+const { handlePublish } = usePublish(publishAdminExperiment, null, loadData)
 </script>

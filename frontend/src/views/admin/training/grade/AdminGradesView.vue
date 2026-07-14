@@ -1,21 +1,25 @@
 <script setup>
 import { useTable } from '@/utils/composables/useTable'
 import { getAdminGrades, addAdminGrade, updateAdminGrade, publishAdminGrade, getAdminGradeStatistics } from '@/api/admin/training'
+import { usePublish } from '@/utils/composables/usePublish'
 import { ElMessage } from 'element-plus'
 import { ref } from 'vue'
 
 const { list, total, loading, pageNo, pageSize, params, handleSizeChange, handleCurrentChange, loadData } = useTable(getAdminGrades, {
   courseId: undefined,
   classId: undefined,
-  status: 0, // 默认待评定
+  status: 0,
   studentName: ''
 })
 
 const stats = ref(null)
 
 const loadStats = async () => {
-  const res = await getAdminGradeStatistics({ courseId: params.courseId, classId: params.classId })
-  stats.value = res.data
+  try {
+    const res = await getAdminGradeStatistics({ courseId: params.value.courseId, classId: params.value.classId })
+    stats.value = res.data
+  } catch (error) {
+  }
 }
 
 const handleAddGrade = async (data) => {
@@ -30,9 +34,5 @@ const handleUpdateGrade = async (data) => {
   loadData()
 }
 
-const handlePublish = async (id) => {
-  await publishAdminGrade(id)
-  ElMessage.success('发布成功')
-  loadData()
-}
+const { handlePublish } = usePublish(publishAdminGrade, null, loadData)
 </script>

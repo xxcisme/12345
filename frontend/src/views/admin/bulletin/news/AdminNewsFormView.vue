@@ -1,32 +1,29 @@
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { ElMessage, ElUpload } from 'element-plus'
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { addAdminNews, updateAdminNews } from '@/api/admin/bulletin'
 import { getNewsDetail } from '@/api/bulletin'
 import { useForm } from '@/utils/composables/useForm'
+import { useDetail } from '@/utils/composables/useDetail'
+import { ElMessage } from 'element-plus'
 
-const route = useRoute()
 const router = useRouter()
-const isEdit = ref(!!route.params.id)
+const isEdit = ref(!!router.currentRoute.value.params.id)
 
-// 表单数据，增加 enclosure 字段用于存储图片地址
 const { form, formRef, submitting, setFormData, submit } = useForm(
   addAdminNews,
   updateAdminNews,
   () => router.push('/admin/bulletin/news')
 )
 
-// 初始化表单结构
 Object.assign(form, {
   id: undefined,
   title: '',
   origin: '',
   content: '',
-  enclosure: '' // 图片地址
+  enclosure: ''
 })
 
-// 图片上传回调
 const handleUploadSuccess = (response) => {
   if (response.code === 200) {
     form.enclosure = response.data.url
@@ -36,21 +33,15 @@ const handleUploadSuccess = (response) => {
   }
 }
 
-// 图片移除回调
 const handleRemove = () => {
   form.enclosure = ''
 }
 
-onMounted(async () => {
-  if (isEdit.value) {
-    try {
-      // 使用前台详情接口获取数据
-      const res = await getNewsDetail(route.params.id)
-      // 直接填充表单（字段名与详情返回一致）
-      setFormData(res.data)
-    } catch (error) {
-      ElMessage.error('加载新闻详情失败')
-    }
-  }
-})
+const { loadDetail } = useDetail(getNewsDetail, '加载新闻详情失败', { autoLoad: false })
+
+if (isEdit.value) {
+  loadDetail().then(data => {
+    if (data) setFormData(data)
+  })
+}
 </script>
