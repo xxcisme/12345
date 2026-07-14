@@ -106,6 +106,7 @@ public enum ErrorCode {
     DB_DUPLICATE_KEY(9001, "数据重复"),
     DB_FOREIGN_KEY(9002, "存在关联数据，无法删除");
 
+
     private final int code;
     private final String message;
 
