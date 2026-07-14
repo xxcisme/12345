@@ -1,29 +1,18 @@
-<script setup>
-import { RouterLink, RouterView } from 'vue-router'
-</script>
-
 <template>
-  <header>
-    <div class="wrapper">
-      <nav>
-        <RouterLink to="/">首页</RouterLink>
-      </nav>
-    </div>
-  </header>
-
-  <RouterView />
+  <component :is="layoutComponent">
+    <router-view />
+  </component>
 </template>
 
-<style scoped>
-nav {
-  width: 100%;
-  font-size: 12px;
-  text-align: center;
-  margin-top: 2rem;
-}
+<script setup>
+import { computed } from 'vue'
+import { useRoute } from 'vue-router'
+import AdminLayout from '@/layout/AdminLayout.vue'
+import DefaultLayout from '@/layout/DefaultLayout.vue'
 
-nav a {
-  display: inline-block;
-  padding: 0 1rem;
-}
-</style>
+const route = useRoute()
+const layoutComponent = computed(() => {
+  const layout = route.meta.layout || 'default'
+  return layout === 'admin' ? AdminLayout : DefaultLayout
+})
+</script>

@@ -1,6 +1,84 @@
+<template>
+  <page-container>
+    <el-card style="max-width:900px; margin:0 auto;">
+      <template #header>
+        <span>实验详情</span>
+      </template>
+      <el-descriptions :column="2" border>
+        <el-descriptions-item label="实验编号">{{ detail.number }}</el-descriptions-item>
+        <el-descriptions-item label="实验名称">{{ detail.name }}</el-descriptions-item>
+        <el-descriptions-item label="所属课程">{{ detail.courseName }}</el-descriptions-item>
+        <el-descriptions-item label="实验类型">{{ detail.experimentType }}</el-descriptions-item>
+        <el-descriptions-item label="成绩">
+          <span v-if="detail.score !== null" :style="{ color: detail.score >= 60 ? '#67c23a' : '#f56c6c', fontWeight: 'bold', fontSize: '18px' }">{{ detail.score }}</span>
+          <span v-else style="color:#999;">待评定</span>
+        </el-descriptions-item>
+        <el-descriptions-item label="状态">
+          <el-tag v-if="detail.status === 0" type="warning">待评定</el-tag>
+          <el-tag v-else-if="detail.status === 1" type="success">已通过</el-tag>
+          <el-tag v-else type="danger">未通过</el-tag>
+        </el-descriptions-item>
+        <el-descriptions-item label="实验简介" :span="2">{{ detail.profile || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="实验介绍" :span="2">{{ detail.description || '-' }}</el-descriptions-item>
+      </el-descriptions>
+    </el-card>
+
+    <el-card style="max-width:900px; margin:20px auto 0;">
+      <template #header>
+        <span>实验报告</span>
+      </template>
+      <el-form :model="reportForm" label-width="100px">
+        <el-form-item label="报告内容">
+          <el-input v-model="reportForm.content" type="textarea" :rows="10" placeholder="请输入实验报告内容（可替换为富文本编辑器）" />
+        </el-form-item>
+        <el-form-item label="附件">
+          <el-upload action="#" :auto-upload="false" :limit="3" :file-list="fileList" drag style="width:100%;">
+            <el-icon class="el-icon--upload"><upload-filled /></el-icon>
+            <div class="el-upload__text">拖拽文件到此处或 <em>点击上传</em></div>
+          </el-upload>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="handleSubmit">提交报告</el-button>
+          <el-button @click="handleBack">返回</el-button>
+        </el-form-item>
+      </el-form>
+    </el-card>
+  </page-container>
+</template>
+
 <script setup>
-import { getMyExperimentDetail } from '@/api/user'
+import { ref, reactive } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { ElMessage } from 'element-plus'
+import { UploadFilled } from '@element-plus/icons-vue'
+import { getMyExperimentDetail, submitExperimentReport } from '@/api/user'
 import { useDetail } from '@/utils/composables/useDetail'
+import PageContainer from '@/components/PageContainer/index.vue'
+
+const router = useRouter()
+const route = useRoute()
 
 const { detail, loading } = useDetail(getMyExperimentDetail, '加载实验详情失败')
+
+const reportForm = reactive({
+  content: ''
+})
+const fileList = ref([])
+
+const handleSubmit = async () => {
+  try {
+    await submitExperimentReport(route.params.id, reportForm)
+    ElMessage.success('实验报告提交成功')
+    router.push('/user/experiments')
+  } catch (error) {
+    ElMessage.error('提交失败')
+  }
+}
+
+const handleBack = () => {
+  router.push('/user/experiments')
+}
 </script>
+
+<style scoped lang="scss">
+</style>
