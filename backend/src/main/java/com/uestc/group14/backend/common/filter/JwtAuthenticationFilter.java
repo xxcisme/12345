@@ -39,6 +39,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             "/api/v1/news/**",
             "/api/v1/notices/**",
             "/api/v1/resources/**",
+            "/api/v1/laboratories/**",
+            "/api/v1/devices/**",
             "/v3/api-docs",
             "/v3/api-docs/**",
             "/swagger-ui.html",
@@ -54,6 +56,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
         String requestURI = request.getRequestURI();
+
+        // 放行 OPTIONS 预检请求（CORS 需要）
+        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         // 检查是否在白名单中
         if (isWhitelistPath(requestURI)) {

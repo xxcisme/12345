@@ -19,8 +19,13 @@ const service = axios.create({
 service.interceptors.request.use(
     config => {
         const token = getToken()
+        console.log('请求拦截器 - URL:', config.url)
+        console.log('请求拦截器 - token:', token ? '存在' : '不存在')
         if (token) {
             config.headers.Authorization = `Bearer ${token}`
+            console.log('请求拦截器 - 已添加 Authorization header')
+        } else {
+            console.warn('请求拦截器 - 未找到 token，请求将不包含认证信息')
         }
         return config
     },

@@ -405,24 +405,20 @@ const router = createRouter({
 })
 
 // 路由守卫：检查登录状态与角色权限
-router.beforeEach((to, from, next) => {
+router.beforeEach((to, from) => {
   const token = getToken()
   const user = getUser()
 
   if (to.meta.requiresAuth && !token) {
-    next({ name: '登录', query: { redirect: to.fullPath } })
-    return
+    return { name: '登录', query: { redirect: to.fullPath } }
   }
 
   if (to.meta.roles && user) {
     const userRole = ROLE_MAP[user.role] || ''
     if (!to.meta.roles.includes(userRole)) {
-      next({ name: '首页' })
-      return
+      return { name: '首页' }
     }
   }
-
-  next()
 })
 
 export default router

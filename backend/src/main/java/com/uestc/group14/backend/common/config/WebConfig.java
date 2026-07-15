@@ -30,7 +30,7 @@ public class WebConfig implements WebMvcConfigurer {
         source.registerCorsConfiguration("/**", config); // 对接口配置跨域设置
         // 创建并返回 FilterRegistrationBean 对象
         FilterRegistrationBean<CorsFilter> bean = new FilterRegistrationBean<>(new CorsFilter(source));
-        bean.setOrder(99999); // 设置过滤器顺序
+        bean.setOrder(0); // 设置最高优先级，确保在 Spring Security 之前执行
         return bean;
     }
 }

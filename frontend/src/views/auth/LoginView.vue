@@ -14,12 +14,22 @@ const handleLogin = async () => {
   loading.value = true
   try {
     const res = await login(form.value)
+    console.log('登录响应:', res)
+    console.log('res.data:', res.data)
     const { token, user } = res.data
+    console.log('token:', token)
+    console.log('user:', user)
     setToken(token)
     setUser(user)
+    // 验证是否存储成功
+    console.log('localStorage token:', localStorage.getItem('token'))
+    console.log('localStorage user:', localStorage.getItem('user'))
     ElMessage.success('登录成功')
     const redirect = route.query.redirect || '/'
     router.push(redirect)
+  } catch (error) {
+    console.error('登录失败:', error)
+    throw error
   } finally {
     loading.value = false
   }
