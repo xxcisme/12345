@@ -9,7 +9,7 @@ public interface UserCenterService {
     UserInfoVO getProfile(Long userId);
     UserInfoVO updateProfile(Long userId, UpdateProfileDTO dto);  // 改为返回 UserInfoVO
     void changePassword(Long userId, ChangePasswordDTO dto);
-    IPage<FavoriteVO> getFavorites(Long userId, Integer pageNo, Integer pageSize, Integer resourceType);
+    IPage<FavoriteVO> getFavorites(Long userId, Integer pageNo, Integer pageSize, Integer resourceType, String keyword);
     Long addFavorite(Long userId, Long resourceId);  // 改为返回 Long
     void removeFavorite(Long userId, Long resourceId);
     IPage<CourseVO> getCourses(Long userId, Integer pageNo, Integer pageSize, Integer status);
