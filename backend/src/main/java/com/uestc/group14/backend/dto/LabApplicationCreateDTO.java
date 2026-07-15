@@ -1,5 +1,6 @@
 package com.uestc.group14.backend.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -17,7 +18,9 @@ public class LabApplicationCreateDTO {
     @NotBlank(message = "实验名称不能为空")
     private String name;
     @NotNull(message = "开始时间不能为空")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime startTime;
     @NotNull(message = "结束时间不能为空")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime endTime;
 }
