@@ -81,10 +81,11 @@ public class UserCenterController {
     public CommonResult<List<FavoriteVO>> getFavorites(HttpServletRequest request,
                                                        @RequestParam(defaultValue = "1") Integer pageNo,
                                                        @RequestParam(defaultValue = "10") Integer pageSize,
-                                                       @RequestParam(required = false) Integer resourceType) {
+                                                       @RequestParam(required = false) Integer resourceType,
+                                                       @RequestParam(required = false) String keyword) {
         Long userId = getCurrentUserId(request);
-        log.info("获取收藏列表 - userId: {}, pageNo: {}, pageSize: {}, resourceType: {}", userId, pageNo, pageSize, resourceType);
-        IPage<FavoriteVO> page = userCenterService.getFavorites(userId, pageNo, pageSize, resourceType);
+        log.info("获取收藏列表 - userId: {}, pageNo: {}, pageSize: {}, resourceType: {}, keyword: {}", userId, pageNo, pageSize, resourceType, keyword);
+        IPage<FavoriteVO> page = userCenterService.getFavorites(userId, pageNo, pageSize, resourceType, keyword);
         return buildPageResult(page);
     }
 
