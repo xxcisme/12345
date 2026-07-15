@@ -28,3 +28,7 @@ mybatis-plus:
   global-config:
     db-config:
       id-type: auto
+
+jwt:
+  secret: YourSecretKeyForJWTTokenGenerationMustBeAtLeast256BitsLongForHS256Algorithm
+  expiration: 86400000
