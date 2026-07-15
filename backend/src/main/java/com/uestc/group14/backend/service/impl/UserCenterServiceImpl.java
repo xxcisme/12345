@@ -230,15 +230,115 @@ public class UserCenterServiceImpl implements UserCenterService {
 
     @Override
     public IPage<CourseVO> getCourses(Long userId, Integer pageNo, Integer pageSize, Integer status) {
-        Page<CourseVO> page = new Page<>(pageNo, pageSize);
-        return labReportMapper.selectCourseVoPage(page, userId, status);
+        UserEntity user = userMapper.selectById(userId);
+        if (user == null) {
+            throw new BusinessException(GlobalErrorCodeConstants.NOT_FOUND);
+        }
+        
+        if (user.getRole() == 2) {
+            Long teacherId = getTeacherIdByUserId(userId);
+            if (teacherId == null) {
+                return new Page<>(pageNo, pageSize, 0);
+            }
+            return getTeacherCourses(teacherId, pageNo, pageSize, status);
+        } else {
+            Page<CourseVO> page = new Page<>(pageNo, pageSize);
+            return labReportMapper.selectCourseVoPage(page, userId, status);
+        }
     }
 
     @Override
     public IPage<ExperimentVO> getExperiments(Long userId, Integer pageNo, Integer pageSize,
                                               Integer status, Long courseId) {
-        Page<ExperimentVO> page = new Page<>(pageNo, pageSize);
-        return labReportMapper.selectExperimentVoPage(page, userId, status, courseId);
+        UserEntity user = userMapper.selectById(userId);
+        if (user == null) {
+            throw new BusinessException(GlobalErrorCodeConstants.NOT_FOUND);
+        }
+        
+        if (user.getRole() == 2) {
+            Long teacherId = getTeacherIdByUserId(userId);
+            if (teacherId == null) {
+                return new Page<>(pageNo, pageSize, 0);
+            }
+            return getTeacherExperiments(teacherId, pageNo, pageSize, status, courseId);
+        } else {
+            Page<ExperimentVO> page = new Page<>(pageNo, pageSize);
+            return labReportMapper.selectExperimentVoPage(page, userId, status, courseId);
+        }
+    }
+
+    private Long getTeacherIdByUserId(Long userId) {
+        UserEntity user = userMapper.selectById(userId);
+        if (user == null) {
+            return null;
+        }
+        LambdaQueryWrapper<TeacherEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(TeacherEntity::getTeacherId, user.getUsername());
+        TeacherEntity teacher = teacherMapper.selectOne(wrapper);
+        return teacher != null ? teacher.getId() : null;
+    }
+
+    private IPage<CourseVO> getTeacherCourses(Long teacherId, Integer pageNo, Integer pageSize, Integer status) {
+        Page<CourseEntity> page = new Page<>(pageNo, pageSize);
+        LambdaQueryWrapper<CourseEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(CourseEntity::getTeacherId, teacherId);
+        if (status != null) {
+            wrapper.eq(CourseEntity::getStatus, status);
+        }
+        wrapper.orderByDesc(CourseEntity::getCreateTime);
+        IPage<CourseEntity> entityPage = courseMapper.selectPage(page, wrapper);
+
+        List<CourseVO> voList = entityPage.getRecords().stream().map(course -> {
+            CourseVO vo = new CourseVO();
+            BeanUtils.copyProperties(course, vo);
+            TeacherEntity teacher = teacherMapper.selectById(course.getTeacherId());
+            if (teacher != null) {
+                vo.setTeacherName(teacher.getName());
+            }
+            return vo;
+        }).collect(Collectors.toList());
+
+        Page<CourseVO> voPage = new Page<>(pageNo, pageSize, entityPage.getTotal());
+        voPage.setRecords(voList);
+        return voPage;
+    }
+
+    private IPage<ExperimentVO> getTeacherExperiments(Long teacherId, Integer pageNo, Integer pageSize,
+                                                      Integer status, Long courseId) {
+        LambdaQueryWrapper<CourseEntity> courseWrapper = new LambdaQueryWrapper<>();
+        courseWrapper.eq(CourseEntity::getTeacherId, teacherId);
+        if (courseId != null) {
+            courseWrapper.eq(CourseEntity::getId, courseId);
+        }
+        List<CourseEntity> courses = courseMapper.selectList(courseWrapper);
+        if (courses.isEmpty()) {
+            return new Page<>(pageNo, pageSize, 0);
+        }
+
+        List<Long> courseIds = courses.stream().map(CourseEntity::getId).collect(Collectors.toList());
+
+        Page<Experiment> page = new Page<>(pageNo, pageSize);
+        LambdaQueryWrapper<Experiment> wrapper = new LambdaQueryWrapper<>();
+        wrapper.in(Experiment::getCourseId, courseIds);
+        if (status != null) {
+            wrapper.eq(Experiment::getStatus, status);
+        }
+        wrapper.orderByDesc(Experiment::getCreateTime);
+        IPage<Experiment> entityPage = experimentMapper.selectPage(page, wrapper);
+
+        Map<Long, String> courseNameMap = courses.stream()
+                .collect(Collectors.toMap(CourseEntity::getId, CourseEntity::getCourseName));
+
+        List<ExperimentVO> voList = entityPage.getRecords().stream().map(exp -> {
+            ExperimentVO vo = new ExperimentVO();
+            BeanUtils.copyProperties(exp, vo);
+            vo.setCourseName(courseNameMap.get(exp.getCourseId()));
+            return vo;
+        }).collect(Collectors.toList());
+
+        Page<ExperimentVO> voPage = new Page<>(pageNo, pageSize, entityPage.getTotal());
+        voPage.setRecords(voList);
+        return voPage;
     }
 
     @Override

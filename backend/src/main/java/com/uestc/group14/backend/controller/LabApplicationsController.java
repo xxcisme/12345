@@ -4,8 +4,8 @@ import com.uestc.group14.backend.common.result.CommonResult;
 import com.uestc.group14.backend.common.utils.JwtUtil;
 import com.uestc.group14.backend.dto.LabApplicationCreateDTO;
 import com.uestc.group14.backend.dto.LabApplicationQueryDTO;
-import com.uestc.group14.backend.Entity.LabApplication;
 import com.uestc.group14.backend.service.LabApplicationService;
+import com.uestc.group14.backend.vo.LabApplicationVO;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -43,10 +43,10 @@ public class LabApplicationsController {
 
     @GetMapping
     @Operation(summary = "获取我的申请列表")
-    public CommonResult<IPage<LabApplication>> list(HttpServletRequest request,
+    public CommonResult<IPage<LabApplicationVO>> list(HttpServletRequest request,
                                                     LabApplicationQueryDTO queryDTO) {
         Long userId = getCurrentUserId(request);
-        IPage<LabApplication> page = labApplicationService.queryUserApplications(userId, queryDTO);
+        IPage<LabApplicationVO> page = labApplicationService.queryUserApplications(userId, queryDTO);
         return CommonResult.success(page);
     }
 }

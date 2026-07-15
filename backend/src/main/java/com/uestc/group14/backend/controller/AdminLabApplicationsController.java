@@ -6,6 +6,7 @@ import com.uestc.group14.backend.dto.AdminLabApplicationQueryDTO;
 import com.uestc.group14.backend.dto.AuditLabAppDTO;
 import com.uestc.group14.backend.Entity.LabApplication;
 import com.uestc.group14.backend.service.LabApplicationService;
+import com.uestc.group14.backend.vo.LabApplicationVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -22,8 +23,8 @@ public class AdminLabApplicationsController {
 
     @GetMapping
     @Operation(summary = "查询申请列表（后台）")
-    public CommonResult<IPage<LabApplication>> list(AdminLabApplicationQueryDTO queryDTO) {
-        IPage<LabApplication> page = labApplicationService.queryAdminApplications(queryDTO);
+    public CommonResult<IPage<LabApplicationVO>> list(AdminLabApplicationQueryDTO queryDTO) {
+        IPage<LabApplicationVO> page = labApplicationService.queryAdminApplications(queryDTO);
         return CommonResult.success(page);
     }
 

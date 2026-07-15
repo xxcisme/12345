@@ -7,20 +7,28 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.uestc.group14.backend.common.exception.BusinessException;
 import com.uestc.group14.backend.common.exception.ErrorCode;
 import com.uestc.group14.backend.dao.LabApplicationMapper;
+import com.uestc.group14.backend.dao.LaboratoryMapper;
 import com.uestc.group14.backend.dao.UserMapper;
+import com.uestc.group14.backend.dao.UserMessageMapper;
 import com.uestc.group14.backend.dao.UserProfileMapper;
 import com.uestc.group14.backend.dto.*;
 import com.uestc.group14.backend.Entity.LabApplication;
+import com.uestc.group14.backend.Entity.Laboratory;
 import com.uestc.group14.backend.Entity.UserEntity;
+import com.uestc.group14.backend.Entity.UserMessage;
 import com.uestc.group14.backend.Entity.UserProfile;
 import com.uestc.group14.backend.service.LabApplicationService;
+import com.uestc.group14.backend.vo.LabApplicationVO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -28,10 +36,9 @@ public class LabApplicationServiceImpl extends ServiceImpl<LabApplicationMapper,
 
     private final UserMapper userMapper;
     private final UserProfileMapper userProfileMapper;
+    private final LaboratoryMapper laboratoryMapper;
+    private final UserMessageMapper userMessageMapper;
 
-    /**
-     * 获取当前用户的真实姓名和手机号
-     */
     private UserInfo getCurrentUserInfo(Long userId) {
         UserEntity user = userMapper.selectById(userId);
         if (user == null) {
@@ -51,44 +58,38 @@ public class LabApplicationServiceImpl extends ServiceImpl<LabApplicationMapper,
     @Override
     @Transactional
     public Long createApplication(LabApplicationCreateDTO createDTO, Long userId) {
-        // 强制从当前用户获取姓名和手机号，覆盖前端传入的值
         UserInfo userInfo = getCurrentUserInfo(userId);
-        // 检查时间冲突（示例简单判断，实际可查询已有申请）
-        // 这里省略，可参考 SQL 查询
 
         LabApplication entity = new LabApplication();
         BeanUtils.copyProperties(createDTO, entity);
-        // 强制设置申请人信息为当前登录用户
         entity.setApplicantName(userInfo.realName());
         entity.setContactPhone(userInfo.phone());
         entity.setNumber("APP-" + System.currentTimeMillis());
-        entity.setStatus(0); // 待审批
+        entity.setStatus(0);
         entity.setCreateTime(LocalDateTime.now());
-        // 注意：如果表中有 update_time，需自动填充，由 MetaObjectHandler 处理
         this.save(entity);
         return entity.getId();
     }
 
     @Override
-    public IPage<LabApplication> queryUserApplications(Long userId, LabApplicationQueryDTO queryDTO) {
-        // 强制根据当前用户信息过滤
+    public IPage<LabApplicationVO> queryUserApplications(Long userId, LabApplicationQueryDTO queryDTO) {
         UserInfo userInfo = getCurrentUserInfo(userId);
 
         Page<LabApplication> page = new Page<>(queryDTO.getPageNo(), queryDTO.getPageSize());
         LambdaQueryWrapper<LabApplication> wrapper = new LambdaQueryWrapper<>();
-        // 强制添加申请人过滤条件：必须匹配当前用户的真实姓名或手机号（或两者都匹配，这里采用姓名+手机号组合）
         wrapper.eq(LabApplication::getApplicantName, userInfo.realName())
                 .eq(LabApplication::getContactPhone, userInfo.phone());
-        // 如果前端传了 status 过滤
         if (queryDTO.getStatus() != null) {
             wrapper.eq(LabApplication::getStatus, queryDTO.getStatus());
         }
         wrapper.orderByDesc(LabApplication::getCreateTime);
-        return this.page(page, wrapper);
+        IPage<LabApplication> resultPage = this.page(page, wrapper);
+        
+        return convertToVO(resultPage);
     }
 
     @Override
-    public IPage<LabApplication> queryAdminApplications(AdminLabApplicationQueryDTO queryDTO) {
+    public IPage<LabApplicationVO> queryAdminApplications(AdminLabApplicationQueryDTO queryDTO) {
         Page<LabApplication> page = new Page<>(queryDTO.getPageNo(), queryDTO.getPageSize());
         LambdaQueryWrapper<LabApplication> wrapper = new LambdaQueryWrapper<>();
         if (queryDTO.getStatus() != null) {
@@ -98,7 +99,44 @@ public class LabApplicationServiceImpl extends ServiceImpl<LabApplicationMapper,
             wrapper.eq(LabApplication::getLabId, queryDTO.getLabId());
         }
         wrapper.orderByDesc(LabApplication::getCreateTime);
-        return this.page(page, wrapper);
+        IPage<LabApplication> resultPage = this.page(page, wrapper);
+        
+        return convertToVO(resultPage);
+    }
+
+    private IPage<LabApplicationVO> convertToVO(IPage<LabApplication> page) {
+        List<LabApplication> records = page.getRecords();
+        
+        List<Long> labIds = records.stream()
+                .map(LabApplication::getLabId)
+                .distinct()
+                .collect(Collectors.toList());
+        
+        Map<Long, String> labNameMap = new HashMap<>();
+        if (!labIds.isEmpty()) {
+            List<Laboratory> labs = laboratoryMapper.selectBatchIds(labIds);
+            for (Laboratory lab : labs) {
+                labNameMap.put(lab.getId(), lab.getName());
+            }
+        }
+        
+        List<LabApplicationVO> voList = records.stream()
+                .map(app -> {
+                    LabApplicationVO vo = new LabApplicationVO();
+                    BeanUtils.copyProperties(app, vo);
+                    vo.setLabName(labNameMap.getOrDefault(app.getLabId(), ""));
+                    return vo;
+                })
+                .collect(Collectors.toList());
+        
+        IPage<LabApplicationVO> voPage = new Page<>();
+        voPage.setRecords(voList);
+        voPage.setTotal(page.getTotal());
+        voPage.setPages(page.getPages());
+        voPage.setCurrent(page.getCurrent());
+        voPage.setSize(page.getSize());
+        
+        return voPage;
     }
 
     @Override
@@ -115,6 +153,36 @@ public class LabApplicationServiceImpl extends ServiceImpl<LabApplicationMapper,
         app.setAuditRemark(auditDTO.getAuditRemark());
         app.setApprovalTime(LocalDateTime.now());
         this.updateById(app);
+        
+        sendAuditMessage(app);
+        
         return app;
+    }
+    
+    private void sendAuditMessage(LabApplication app) {
+        LambdaQueryWrapper<UserProfile> profileWrapper = new LambdaQueryWrapper<>();
+        profileWrapper.eq(UserProfile::getRealName, app.getApplicantName());
+        UserProfile profile = userProfileMapper.selectOne(profileWrapper);
+        
+        if (profile == null) {
+            return;
+        }
+        
+        UserMessage message = new UserMessage();
+        message.setUserId(profile.getUserId());
+        message.setType(1);
+        
+        if (app.getStatus() == 1) {
+            message.setTitle("审核通过");
+            message.setContent("您的实验室申请（编号：" + app.getNumber() + "）已通过审核。");
+        } else if (app.getStatus() == 2) {
+            message.setTitle("审核拒绝");
+            String remark = app.getAuditRemark() != null ? app.getAuditRemark() : "无";
+            message.setContent("您的实验室申请（编号：" + app.getNumber() + "）未通过审核，原因：" + remark + "。");
+        }
+        
+        message.setIsRead(0);
+        message.setCreateTime(LocalDateTime.now());
+        userMessageMapper.insert(message);
     }
 }
