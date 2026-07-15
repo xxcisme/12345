@@ -1,19 +1,26 @@
 <script setup>
 import { ref, computed } from 'vue'
-import { useRoute } from 'vue-router'
-import { ElMessage } from 'element-plus'
+import { useRoute, useRouter } from 'vue-router'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { getResourceDetail, scoreResource } from '@/api/resource'
+import { auditAdminResource } from '@/api/admin/resource'
 import { addFavorite, cancelFavorite, getFavorites } from '@/api/user'
 import { getUser } from '@/utils/local_storage'
+import { ROLE_MAP } from '@/utils/constants'
 import { useDetail } from '@/utils/composables/useDetail'
 
 const route = useRoute()
+const router = useRouter()
 const scoreVal = ref(0)
 const favoriting = ref(false)
 const scoring = ref(false)
+const auditing = ref(false)
 const userFavorites = ref([])
 
 const { detail, loading, loadDetail } = useDetail(getResourceDetail, '加载资源详情失败')
+
+const user = computed(() => getUser())
+const isAdmin = computed(() => user.value && ROLE_MAP[user.value.role] === 'admin')
 
 const isFavorited = computed(() => {
   return userFavorites.value.some(f => f.resourceId === Number(route.params.id))
@@ -59,6 +66,31 @@ const toggleFavorite = async () => {
   }
 }
 
+const handleAudit = async (status) => {
+  let auditRemark = ''
+  if (status === 1) {
+    try {
+      const { value } = await ElMessageBox.prompt('请输入驳回原因', '驳回', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        inputPattern: /.+/,
+        inputErrorMessage: '请输入驳回原因'
+      })
+      auditRemark = value
+    } catch {
+      return
+    }
+  }
+  auditing.value = true
+  try {
+    await auditAdminResource(route.params.id, { status, auditRemark })
+    ElMessage.success('审核完成')
+    router.push('/admin/resource/media')
+  } finally {
+    auditing.value = false
+  }
+}
+
 loadUserFavorites()
 </script>
 
@@ -80,7 +112,7 @@ loadUserFavorites()
           <p>{{ detail.profile }}</p>
         </div>
 
-        <div class="detail-section">
+        <div v-if="!isAdmin" class="detail-section">
           <h3>评分</h3>
           <div class="score-area">
             <el-rate v-model="scoreVal" :disabled="!getUser()" show-score />
@@ -90,6 +122,19 @@ loadUserFavorites()
             <el-button size="small" :loading="favoriting" @click="toggleFavorite" :disabled="!getUser()">
               <el-icon :color="isFavorited ? '#E6A23C' : undefined"><Star /></el-icon> {{ isFavorited ? '已收藏' : '收藏' }}
             </el-button>
+          </div>
+        </div>
+
+        <div v-if="isAdmin" class="detail-section">
+          <h3>审核操作</h3>
+          <div class="audit-area">
+            <template v-if="detail.status === 0">
+              <el-button type="success" :loading="auditing" @click="handleAudit(2)">通过</el-button>
+              <el-button type="danger" :loading="auditing" @click="handleAudit(1)">驳回</el-button>
+            </template>
+            <el-tag v-else :type="detail.status === 1 ? 'danger' : 'success'">
+              {{ detail.status === 1 ? '已驳回' : '已发布' }}
+            </el-tag>
           </div>
         </div>
       </template>
@@ -143,5 +188,10 @@ loadUserFavorites()
   align-items: center;
   gap: 16px;
   flex-wrap: wrap;
+}
+.audit-area {
+  display: flex;
+  align-items: center;
+  gap: 16px;
 }
 </style>

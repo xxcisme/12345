@@ -24,6 +24,7 @@ const { list, total, loading, pageNo, pageSize, params, handleSizeChange, handle
             <div class="card-info">
               <h4>{{ item.name }}</h4>
               <p class="card-desc">编号：{{ item.number }}</p>
+              <p v-if="item.grade !== undefined && item.grade !== null" class="card-desc">成绩：{{ item.grade }}</p>
               <div class="card-meta">
                 <el-tag :type="item.status === 1 ? 'success' : 'info'" size="small">
                   {{ item.status === 1 ? '已发布' : '草稿' }}

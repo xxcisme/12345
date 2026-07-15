@@ -3,6 +3,25 @@ import router from '@/router'
 import { ElMessage } from 'element-plus'
 import { getToken, clearAuth } from './local_storage'
 
+function convertDateTimeStrings(obj) {
+    if (typeof obj === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(obj)) {
+        return obj.replace('T', ' ')
+    }
+    if (Array.isArray(obj)) {
+        return obj.map(item => convertDateTimeStrings(item))
+    }
+    if (obj && typeof obj === 'object' && !(obj instanceof File) && !(obj instanceof Blob) && !(obj instanceof Date)) {
+        const result = {}
+        for (const key in obj) {
+            if (Object.prototype.hasOwnProperty.call(obj, key)) {
+                result[key] = convertDateTimeStrings(obj[key])
+            }
+        }
+        return result
+    }
+    return obj
+}
+
 const base = import.meta.env.VITE_API_BASE_URL || ''
 const version = import.meta.env.VITE_API_VERSION || '/api'
 const baseURL = `${base}${version}`.replace(/\/+$/, '')
@@ -45,6 +64,9 @@ service.interceptors.response.use(
 
         // 成功
         if (code === 200) {
+            if (res.data) {
+                res.data = convertDateTimeStrings(res.data)
+            }
             return res
         }
 

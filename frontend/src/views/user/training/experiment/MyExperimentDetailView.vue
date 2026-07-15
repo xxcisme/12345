@@ -14,6 +14,10 @@ const { detail, loading } = useDetail(getMyExperimentDetail, '加载实验详情
           <span>编号：{{ detail.number }}</span>
           <span>课程：{{ detail.courseName }}</span>
           <span v-if="detail.objective">目标：{{ detail.objective }}</span>
+          <span v-if="detail.grade !== undefined && detail.grade !== null">成绩：{{ detail.grade }}</span>
+          <span v-if="detail.evaluationStatus !== undefined && detail.evaluationStatus !== null">
+            评定状态：{{ detail.evaluationStatus === 0 ? '待评定' : detail.evaluationStatus === 1 ? '已通过' : '未通过' }}
+          </span>
           <span>创建时间：{{ detail.createTime }}</span>
         </div>
         <div v-if="detail.steps" class="detail-section">
