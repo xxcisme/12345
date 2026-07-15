@@ -8,7 +8,8 @@ export function useMessageRead(markApi, loadMessages) {
         markLoading.value = true
         try {
             const res = await markApi({ messageIds: ids })
-            ElMessage.success(`已标记 ${res.data?.updatedCount || 0} 条为已读`)
+            const updatedCount = res.data?.updatedCount ?? res.updatedCount ?? ids.length
+            ElMessage.success(`已标记 ${updatedCount} 条为已读`)
             loadMessages()
         } finally {
             markLoading.value = false
