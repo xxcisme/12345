@@ -21,7 +21,7 @@ const handleSubmit = async () => {
     return
   }
   if (form.value.newPassword !== form.value.confirmPassword) {
-    ElMessage.error('两次新密码不一致')
+    ElMessage.warning('两次新密码不一致')
     return
   }
   loading.value = true

@@ -16,7 +16,7 @@ export function useConfirm(deleteApi, onSuccess) {
             }
         }).catch((action) => {
             if (action !== 'cancel' && action !== 'close') {
-                ElMessage.error('删除失败，请重试')
+                ElMessage.warning('删除失败，请重试')
             }
         })
     }

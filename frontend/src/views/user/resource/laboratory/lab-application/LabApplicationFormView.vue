@@ -18,13 +18,13 @@ const form = ref({
 const loading = ref(false)
 
 const rules = {
+  labId: [{ required: true, message: '请输入实验室ID', trigger: 'blur' }],
   applicantName: [{ required: true, message: '请输入申请人姓名', trigger: 'blur' }],
   contactPhone: [
     { required: true, message: '请输入联系电话', trigger: 'blur' },
     { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号码', trigger: 'blur' }
   ],
-  name: [{ required: true, message: '请输入实验室名称', trigger: 'blur' }],
-  purpose: [{ required: true, message: '请描述使用目的', trigger: 'blur' }],
+  name: [{ required: true, message: '请输入实验名称', trigger: 'blur' }],
   startTime: [{ required: true, message: '请选择开始时间', trigger: 'change' }],
   endTime: [{ required: true, message: '请选择结束时间', trigger: 'change' }]
 }
@@ -55,23 +55,26 @@ const handleSubmit = async () => {
 
     <div class="form-card">
       <el-form ref="formRef" :model="form" :rules="rules" label-width="100px" style="max-width: 560px">
+        <el-form-item label="实验室ID" prop="labId">
+          <el-input v-model="form.labId" placeholder="请输入实验室ID" />
+        </el-form-item>
         <el-form-item label="申请人" prop="applicantName">
           <el-input v-model="form.applicantName" placeholder="请输入申请人姓名" />
         </el-form-item>
         <el-form-item label="联系电话" prop="contactPhone">
           <el-input v-model="form.contactPhone" placeholder="请输入联系电话" />
         </el-form-item>
-        <el-form-item label="实验室名称" prop="name">
-          <el-input v-model="form.name" placeholder="请输入实验室名称" />
+        <el-form-item label="实验名称" prop="name">
+          <el-input v-model="form.name" placeholder="请输入实验名称" />
         </el-form-item>
-        <el-form-item label="使用目的" prop="purpose">
-          <el-input v-model="form.purpose" type="textarea" :rows="4" placeholder="请描述使用目的" />
+        <el-form-item label="申请说明" prop="purpose">
+          <el-input v-model="form.purpose" type="textarea" :rows="4" placeholder="请输入申请说明" />
         </el-form-item>
         <el-form-item label="开始时间" prop="startTime">
-          <el-date-picker v-model="form.startTime" type="datetime" placeholder="选择开始时间" style="width: 100%" />
+          <el-date-picker v-model="form.startTime" type="datetime" placeholder="选择开始时间" value-format="YYYY-MM-DD HH:mm:ss" style="width: 100%" />
         </el-form-item>
         <el-form-item label="结束时间" prop="endTime">
-          <el-date-picker v-model="form.endTime" type="datetime" placeholder="选择结束时间" style="width: 100%" />
+          <el-date-picker v-model="form.endTime" type="datetime" placeholder="选择结束时间" value-format="YYYY-MM-DD HH:mm:ss" style="width: 100%" />
         </el-form-item>
         <el-form-item>
           <el-button type="primary" :loading="loading" @click="handleSubmit">提交申请</el-button>

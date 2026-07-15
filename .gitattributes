@@ -29,6 +29,7 @@
 *.cmd text eol=crlf
 
 ### binary ###
+*.docs binary
 *.mp3 binary
 *.wav binary
 *.flac binary

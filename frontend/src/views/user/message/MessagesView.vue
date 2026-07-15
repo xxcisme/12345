@@ -8,9 +8,12 @@ const { list, total, loading, pageNo, pageSize, params, handleSizeChange, handle
   isRead: undefined
 })
 
-const { markRead } = useMessageRead(markMessagesRead, loadData)
+const { markRead, markLoading } = useMessageRead(markMessagesRead, loadData)
 
-const markAll = () => markRead([])
+const markAll = () => {
+  const ids = list.value.filter(item => !item.isRead).map(item => item.id)
+  if (ids.length) markRead(ids)
+}
 </script>
 
 <template>

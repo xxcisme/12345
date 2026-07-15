@@ -1,9 +1,9 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { getResourceDetail, scoreResource } from '@/api/resource'
-import { addFavorite } from '@/api/user'
+import { addFavorite, cancelFavorite, getFavorites } from '@/api/user'
 import { getUser } from '@/utils/local_storage'
 import { useDetail } from '@/utils/composables/useDetail'
 
@@ -11,8 +11,23 @@ const route = useRoute()
 const scoreVal = ref(0)
 const favoriting = ref(false)
 const scoring = ref(false)
+const userFavorites = ref([])
 
 const { detail, loading, loadDetail } = useDetail(getResourceDetail, '加载资源详情失败')
+
+const isFavorited = computed(() => {
+  return userFavorites.value.some(f => f.resourceId === Number(route.params.id))
+})
+
+const loadUserFavorites = async () => {
+  if (!getUser()) return
+  try {
+    const res = await getFavorites({ pageNo: 1, pageSize: 1000 })
+    userFavorites.value = res.data?.records || res.data || []
+  } catch {
+    // 错误已由拦截器处理
+  }
+}
 
 const handleScore = async () => {
   if (!getUser()) { ElMessage.warning('请先登录'); return }
@@ -30,13 +45,21 @@ const toggleFavorite = async () => {
   if (!getUser()) { ElMessage.warning('请先登录'); return }
   favoriting.value = true
   try {
-    await addFavorite({ resourceId: route.params.id })
+    if (isFavorited.value) {
+      await cancelFavorite(route.params.id)
+      ElMessage.success('取消收藏')
+    } else {
+      await addFavorite({ resourceId: route.params.id })
+      ElMessage.success('加入收藏')
+    }
     await loadDetail()
-    ElMessage.success('已收藏')
+    await loadUserFavorites()
   } finally {
     favoriting.value = false
   }
 }
+
+loadUserFavorites()
 </script>
 
 <template>
@@ -65,7 +88,7 @@ const toggleFavorite = async () => {
               提交评分
             </el-button>
             <el-button size="small" :loading="favoriting" @click="toggleFavorite" :disabled="!getUser()">
-              <el-icon><Star /></el-icon> 收藏
+              <el-icon :color="isFavorited ? '#E6A23C' : undefined"><Star /></el-icon> {{ isFavorited ? '已收藏' : '收藏' }}
             </el-button>
           </div>
         </div>
