@@ -50,3 +50,15 @@ export const ROLE_MAP = {
     3: 'social',
     4: 'admin'
 }
+
+export const ROLE_NAME_MAP = {
+    1: '学生',
+    2: '教师',
+    3: '社会人士',
+    4: '管理员'
+}
+
+export const USER_STATUS_MAP = {
+    0: '禁用',
+    1: '启用'
+}

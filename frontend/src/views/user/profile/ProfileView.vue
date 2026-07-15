@@ -1,11 +1,19 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { getProfile, updateProfile } from '@/api/user'
+import { ROLE_NAME_MAP, USER_STATUS_MAP } from '@/utils/constants'
 
 const profile = ref({})
 const editMode = ref(false)
 const form = ref({ phone: '', email: '', realName: '' })
+
+const roleName = computed(() => ROLE_NAME_MAP[profile.value.role] || '')
+
+const userStatus = computed(() => {
+  const s = profile.value.status
+  return s !== undefined && s !== null ? (USER_STATUS_MAP[s] || s) : ''
+})
 
 onMounted(async () => {
   try {
@@ -45,8 +53,13 @@ const handleSave = async () => {
           <el-descriptions-item label="真实姓名">{{ profile.realName }}</el-descriptions-item>
           <el-descriptions-item label="手机号">{{ profile.phone }}</el-descriptions-item>
           <el-descriptions-item label="邮箱">{{ profile.email }}</el-descriptions-item>
-          <el-descriptions-item label="角色">{{ profile.roleName }}</el-descriptions-item>
-          <el-descriptions-item label="注册时间">{{ profile.createTime }}</el-descriptions-item>
+          <el-descriptions-item label="角色">{{ roleName }}</el-descriptions-item>
+          <el-descriptions-item v-if="profile.schoolCode" label="学号/工号">{{ profile.schoolCode }}</el-descriptions-item>
+          <el-descriptions-item v-if="profile.className" label="班级">{{ profile.className }}</el-descriptions-item>
+          <el-descriptions-item v-if="profile.occupationType" label="职业类型">{{ profile.occupationType }}</el-descriptions-item>
+          <el-descriptions-item label="状态">{{ userStatus }}</el-descriptions-item>
+          <el-descriptions-item label="最后登录时间">{{ profile.lastLoginTime }}</el-descriptions-item>
+          <el-descriptions-item v-if="profile.lastLoginIp" label="最后登录IP">{{ profile.lastLoginIp }}</el-descriptions-item>
         </el-descriptions>
         <div class="action-bar">
           <el-button type="primary" @click="handleEdit">编辑信息</el-button>
